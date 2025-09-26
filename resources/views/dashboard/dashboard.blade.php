@@ -8,15 +8,17 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 </head>
 
 <body>
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 bg-dark p-3 vh-100">
+            <div class="col-md-3 col-lg-2 bg-dark p-3 vh-100 d-flex flex-column">
                 <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                    <span class="fs-4">📦 Inventory</span>
+                    <span class="fs-4"><i class="fa-solid fa-bowl-food"></i> Inventory</span>
                 </a>
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto">
@@ -37,11 +39,13 @@
                     </li>
                 </ul>
                 <hr>
-                <div class="dropdown">
+
+                <!-- Dropdown at bottom -->
+                <div class="dropdown mt-auto">
                     <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                         id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
                         <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
-                        <strong>mdo</strong>
+                        <strong>Admin</strong>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
                         <li><a class="dropdown-item" href="#">New project...</a></li>
@@ -54,6 +58,7 @@
                     </ul>
                 </div>
             </div>
+
 
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 px-md-4 py-4">
@@ -114,8 +119,8 @@
                                     <td class="text-success">50</td>
                                     <td>₱45.00</td>
                                     <td>
-                                        <a href="#" class="btn btn-sm btn-info">Edit</a>
-                                        <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                                        <a href="#" class="btn btn-sm btn-dark">Edit</a>
+                                        <a href="#" class="btn btn-sm btn-outline-dark">Delete</a>
                                     </td>
                                 </tr>
                                 <tr>
@@ -125,8 +130,8 @@
                                     <td class="text-warning">4</td>
                                     <td>₱12.00</td>
                                     <td>
-                                        <a href="#" class="btn btn-sm btn-info">Edit</a>
-                                        <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                                        <a href="#" class="btn btn-sm btn-dark">Edit</a>
+                                        <a href="#" class="btn btn-sm btn-outline-dark">Delete</a>
                                     </td>
                                 </tr>
                                 <tr>
@@ -136,8 +141,8 @@
                                     <td class="text-danger">0</td>
                                     <td>₱95.00</td>
                                     <td>
-                                        <a href="#" class="btn btn-sm btn-info">Edit</a>
-                                        <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                                        <a href="#" class="btn btn-sm btn-dark">Edit</a>
+                                        <a href="#" class="btn btn-sm btn-outline-dark">Delete</a>
                                     </td>
                                 </tr>
                             </tbody>
