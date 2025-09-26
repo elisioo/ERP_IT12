@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
+            $table->dateTime('order_date')->default(now());
+            $table->enum('status', ['pending','shipped','completed','cancelled'])->default('pending');
             $table->timestamps();
         });
     }

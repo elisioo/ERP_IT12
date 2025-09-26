@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $table) {
+       Schema::create('payments', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('sales_id')->constrained()->cascadeOnDelete();
+            $table->decimal('amount', 10, 2);
+            $table->dateTime('payment_date')->default(now());
+            $table->enum('method', ['cash','credit_card','debit_card','online']);
             $table->timestamps();
         });
     }

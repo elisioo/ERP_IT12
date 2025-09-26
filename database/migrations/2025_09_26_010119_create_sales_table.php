@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
+            $table->dateTime('sales_date')->default(now());
+            $table->decimal('total', 10, 2);
             $table->timestamps();
         });
     }

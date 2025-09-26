@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+          Schema::create('salary_lines', function (Blueprint $table) {
             $table->id();
-            $table->string('category_name');
+            $table->foreignId('salary_id')->constrained()->cascadeOnDelete();
+            $table->string('description');
+            $table->decimal('amount', 10, 2);
+            $table->enum('type', ['earning', 'deduction'])->default('earning');
             $table->timestamps();
         });
     }
@@ -23,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('salary_lines');
     }
 };

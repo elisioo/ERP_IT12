@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('salaries', function (Blueprint $table) {
             $table->id();
-            $table->string('category_name');
+            $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
+            $table->decimal('gross_salary', 10, 2)->default(0);
+            $table->decimal('net_salary', 10, 2)->default(0);
+            $table->date('salary_date');
             $table->timestamps();
         });
     }
@@ -23,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('salaries');
     }
 };
