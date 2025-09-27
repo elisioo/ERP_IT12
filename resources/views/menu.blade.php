@@ -10,6 +10,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="icon" href="{{ asset('img/kdr.png') }}" type="image/x-icon">
+
 
     <style>
     .border {
@@ -47,7 +49,9 @@
         <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center">
             <!-- Logo and Welcome -->
             <div class="mb-4">
-                <i class='bx bxs-bowl-hot' style="font-size:4rem;"></i>
+                <img src="{{ asset('img/kdr.png') }}" alt="Logo" style="width:120px; height:auto;">
+
+                <!-- <i class='bx bxs-bowl-hot' style="font-size:4rem;"></i> -->
                 <h2 class="fw-bold">Welcome!</h2>
                 <p class="text-muted">
                     Your all-in-one ERP solution for <strong>employees</strong> and <strong>inventory</strong>.
@@ -66,7 +70,7 @@
                 </a>
 
                 <!-- Inventory -->
-                <a href="#" class="text-decoration-none text-dark">
+                <a href="{{ route('dashboard') }}" class="text-decoration-none text-dark">
                     <div class="border border-dark rounded p-4 d-flex flex-column align-items-center justify-content-center shadow-sm"
                         style="width: 180px; height: 180px;">
                         <i class="fa-solid fa-boxes-stacked fa-3x mb-3"></i>
