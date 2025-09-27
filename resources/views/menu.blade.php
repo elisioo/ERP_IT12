@@ -22,15 +22,25 @@
     .border:hover {
         transform: translateY(-5px);
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-        border-color: #ffffffff;
-        background-color: #171717ff !important;
-        /* Bootstrap primary color */
+        border-color: #dc3545;
+        background-color: #dc3545 !important;
     }
 
     .border:hover i,
     .border:hover h5 {
-        color: #ffffffff;
-        /* Icon + text turns blue */
+        color: #fff !important;
+    }
+
+    .border_employee:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+        border-color: #0d6efd;
+        background-color: #0d6efd !important;
+    }
+
+    .border_employee:hover i,
+    .border_employee :hover h5 {
+        color: #fff !important;
     }
     </style>
 
@@ -50,9 +60,9 @@
             <!-- Logo and Welcome -->
             <div class="mb-4">
                 <img src="{{ asset('img/kdr.png') }}" alt="Logo" style="width:120px; height:auto;">
-
+                <h1 class="h3 mb-5">Korean Diner Davao</h1>
                 <!-- <i class='bx bxs-bowl-hot' style="font-size:4rem;"></i> -->
-                <h2 class="fw-bold">Welcome!</h2>
+                <h1 class="fw-bold">Welcome!</h1>
                 <p class="text-muted">
                     Your all-in-one ERP solution for <strong>employees</strong> and <strong>inventory</strong>.
                 </p>
@@ -62,7 +72,7 @@
             <div class="d-flex justify-content-center gap-4 mt-2">
                 <!-- Employee -->
                 <a href="#" class="text-decoration-none text-dark">
-                    <div class="border border-dark rounded p-4 d-flex flex-column align-items-center justify-content-center shadow-sm"
+                    <div class="border border_employee border-dark rounded-4 p-4 d-flex flex-column align-items-center justify-content-center shadow-sm"
                         style="width: 180px; height: 180px;">
                         <i class="fa-solid fa-id-badge fa-3x mb-3"></i>
                         <h5 class="mt-2">Employee</h5>
@@ -71,7 +81,7 @@
 
                 <!-- Inventory -->
                 <a href="{{ route('dashboard') }}" class="text-decoration-none text-dark">
-                    <div class="border border-dark rounded p-4 d-flex flex-column align-items-center justify-content-center shadow-sm"
+                    <div class="border border-dark rounded-4 p-4 d-flex flex-column align-items-center justify-content-center shadow-sm"
                         style="width: 180px; height: 180px;">
                         <i class="fa-solid fa-boxes-stacked fa-3x mb-3"></i>
                         <h5 class="mt-2">Inventory</h5>
