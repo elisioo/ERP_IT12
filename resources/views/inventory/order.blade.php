@@ -7,9 +7,9 @@
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
             <h5 class="fw-bold h5">Order Management</h5>
-            <p class="text-muted mb-0">Orders /</p>
+            <p class="text-muted mb-0">Orders ></p>
         </div>
-        <a href="#" class="btn btn-primary btn-sm">+ Create Order</a>
+        <a href="#" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Create Order</a>
     </div>
     <!-- Order Summary Cards -->
     <div class="row mb-4">

@@ -10,6 +10,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" href="{{ asset('img/kdr.png') }}" type="image/x-icon">
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+    body {
+        font-family: 'Nunito', sans-serif;
+        background-color: #f8f9fa;
+    }
+    </style>
 
 </head>
 

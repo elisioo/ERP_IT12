@@ -27,6 +27,18 @@ Route::get('/menus/add', function () {
     return view('inventory.addMenu', ['page' => 'menus']);
 })->name('menus.add');
 
+Route::get('/expenses', function () {
+    return view('inventory.expenses', ['page' => 'expenses']);
+})->name('expenses');
+
+Route::get('/expenses/add', function () {
+    return view('inventory.addExpenses', ['page' => 'expenses']);
+})->name('expenses.add');
+
+Route::get('/inventory', function () {
+    return view('inventory.inventory', ['page' => 'inventory']);
+})->name('inventory');
+
 // Route::prefix('inventory')->group(function () {
 //     Route::get('/', function () {
 //         return view('inventory.dashboard');

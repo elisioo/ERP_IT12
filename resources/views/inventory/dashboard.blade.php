@@ -3,103 +3,69 @@
 @section('content')
 <div class="container-fluid">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
             <h5 id="greeting" class="h5 fw-bold"></h5>
             <p class="text-muted mb-0" id="message"></p>
         </div>
-        <a href="#" class="btn btn-primary btn-sm">+ Add Item</a>
+        <a href="#" class="btn btn-primary btn-sm shadow-sm">
+            <i class="fa-solid fa-plus me-1"></i> Add Item
+        </a>
     </div>
 
     <div class="row">
-        <!-- Left Column -->
+        <!-- LEFT COLUMN -->
         <div class="col-lg-9">
             <!-- Info Alert -->
-            <div class="alert alert-info d-flex align-items-center" role="alert">
+            <div class="alert alert-info d-flex align-items-center shadow-sm" role="alert">
                 <i class="fa-solid fa-circle-info me-2"></i>
                 <div>Notice: Some fresh ingredients need to be reordered soon!</div>
             </div>
 
             <!-- Summary Cards -->
             <div class="row g-3 mb-4">
-                <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-3">
-                                    <i class="fa-solid fa-bowl-food fa-2x text-primary"></i>
-                                </div>
-                                <div class="col-9">
-                                    <h6 class="card-title text-muted mb-1">Total Ingredients</h6>
-                                    <p class="fs-5 fw-bold mb-0">85</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @php
+                $stats = [
+                ['icon' => 'fa-bowl-food', 'color' => 'text-primary', 'title' => 'Total Ingredients', 'value' =>
+                $totalIngredients ?? 85],
+                ['icon' => 'fa-triangle-exclamation', 'color' => 'text-warning', 'title' => 'Low Stock', 'value' =>
+                $lowStock ?? 12],
+                ['icon' => 'fa-ban', 'color' => 'text-danger', 'title' => 'Out of Stock', 'value' => $outOfStock ?? 5],
+                ['icon' => 'fa-sack-dollar', 'color' => 'text-success', 'title' => 'Expenses', 'value' => '₱' .
+                number_format($expenses ?? 35000, 0)]
+                ];
+                @endphp
 
-                <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
+                @foreach($stats as $stat)
+                <div class="col-sm-6 col-md-3">
+                    <div class="card shadow-sm border-0 hover-shadow-sm">
                         <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-3">
-                                    <i class="fa-solid fa-triangle-exclamation fa-2x text-warning"></i>
-                                </div>
-                                <div class="col-9">
-                                    <h6 class="card-title text-muted mb-1">Low Stock</h6>
-                                    <p class="fs-5 fw-bold mb-0">12</p>
+                            <div class="d-flex align-items-center">
+                                <i class="fa-solid {{ $stat['icon'] }} fa-2x {{ $stat['color'] }} me-3"></i>
+                                <div>
+                                    <h6 class="card-title text-muted mb-1">{{ $stat['title'] }}</h6>
+                                    <p class="fs-5 fw-bold mb-0">{{ $stat['value'] }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-3">
-                                    <i class="fa-solid fa-ban fa-2x text-danger"></i>
-                                </div>
-                                <div class="col-9">
-                                    <h6 class="card-title text-muted mb-1">Out of Stock</h6>
-                                    <p class="fs-5 fw-bold mb-0">5</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-3">
-                                    <i class="fa-solid fa-sack-dollar fa-2x text-success"></i>
-                                </div>
-                                <div class="col-9">
-                                    <h6 class="card-title text-muted mb-1">Expenses</h6>
-                                    <p class="fs-5 fw-bold mb-0">₱35,000</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
 
-            <!-- Gross Sales Card -->
+            <!-- Gross Sales Card (with chart) -->
             <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
+                <div class="card-body d-flex flex-wrap justify-content-between align-items-center">
+                    <div class="mb-3 mb-md-0">
                         <h6 class="text-muted mb-1">Gross Sales</h6>
-                        <h4 class="fw-bold text-success">₱120,000</h4>
+                        <h4 class="fw-bold text-success">₱{{ number_format($grossSales ?? 120000, 0) }}</h4>
                         <small class="text-muted">This Month</small>
                     </div>
-                    <i class="fa-solid fa-chart-line fa-2x text-success"></i>
+
                 </div>
             </div>
 
-            <!-- Sold Meals Summary -->
+            <!-- Summary of Sold Meals -->
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <span class="fw-bold">Summary of Sold Meals</span>
@@ -121,40 +87,27 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach($soldMeals ?? [
+                            ['name' => 'Bulgogi Set', 'category' => 'Main Dish', 'qty' => 45, 'sales' => 18000],
+                            ['name' => 'Kimchi Fried Rice', 'category' => 'Main Dish', 'qty' => 70, 'sales' => 21000],
+                            ['name' => 'Tteokbokki', 'category' => 'Snack', 'qty' => 60, 'sales' => 15000],
+                            ['name' => 'Samgyeopsal (per set)', 'category' => 'Main Dish', 'qty' => 80, 'sales' =>
+                            40000],
+                            ] as $index => $meal)
                             <tr>
-                                <td>1</td>
-                                <td>Bulgogi Set</td>
-                                <td>Main Dish</td>
-                                <td>45</td>
-                                <td>₱18,000</td>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $meal['name'] }}</td>
+                                <td>{{ $meal['category'] }}</td>
+                                <td>{{ $meal['qty'] }}</td>
+                                <td>₱{{ number_format($meal['sales'], 0) }}</td>
                             </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>Kimchi Fried Rice</td>
-                                <td>Main Dish</td>
-                                <td>70</td>
-                                <td>₱21,000</td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>Tteokbokki</td>
-                                <td>Snack</td>
-                                <td>60</td>
-                                <td>₱15,000</td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>Samgyeopsal (per set)</td>
-                                <td>Main Dish</td>
-                                <td>80</td>
-                                <td>₱40,000</td>
-                            </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Inventory Table -->
+            <!-- Inventory List -->
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white fw-bold">Inventory List</div>
                 <div class="card-body table-responsive">
@@ -170,64 +123,47 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach($inventoryItems ?? [] as $index => $item)
                             <tr>
-                                <td>1</td>
-                                <td>Bulgogi Beef (1kg)</td>
-                                <td>Meat</td>
-                                <td><span class="badge bg-success">12</span></td>
-                                <td>₱480.00</td>
-                                <td> <a href="#" class="btn btn-sm btn-outline-dark">Edit</a> <a href="#"
-                                        class="btn btn-sm btn-outline-danger">Delete</a> </td>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $item['name'] }}</td>
+                                <td>{{ $item['category'] }}</td>
+                                <td>
+                                    <span class="badge 
+                                        @if($item['stock'] == 0) bg-danger 
+                                        @elseif($item['stock'] < 5) bg-warning text-dark 
+                                        @else bg-success @endif">
+                                        {{ $item['stock'] }}
+                                    </span>
+                                </td>
+                                <td>₱{{ number_format($item['price'], 2) }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-outline-dark me-1">Edit</a>
+                                    <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </td>
                             </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>Kimchi (Jar)</td>
-                                <td>Side Dish</td>
-                                <td><span class="badge bg-warning text-dark">3</span></td>
-                                <td>₱150.00</td>
-                                <td> <a href="#" class="btn btn-sm btn-outline-dark">Edit</a> <a href="#"
-                                        class="btn btn-sm btn-outline-danger">Delete</a> </td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>Gochujang (500g)</td>
-                                <td>Sauce</td>
-                                <td><span class="badge bg-success">20</span></td>
-                                <td>₱220.00</td>
-                                <td> <a href="#" class="btn btn-sm btn-outline-dark">Edit</a> <a href="#"
-                                        class="btn btn-sm btn-outline-danger">Delete</a> </td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>Rice (25kg Sack)</td>
-                                <td>Staple</td>
-                                <td><span class="badge bg-danger">0</span></td>
-                                <td>₱1,200.00</td>
-                                <td> <a href="#" class="btn btn-sm btn-outline-dark">Edit</a> <a href="#"
-                                        class="btn btn-sm btn-outline-danger">Delete</a> </td>
-                            </tr>
-                            <tr>
-                                <td>5</td>
-                                <td>Seaweed Sheets (Pack of 50)</td>
-                                <td>Ingredients</td>
-                                <td><span class="badge bg-success">40</span></td>
-                                <td>₱300.00</td>
-                                <td> <a href="#" class="btn btn-sm btn-outline-dark">Edit</a> <a href="#"
-                                        class="btn btn-sm btn-outline-danger">Delete</a> </td>
-                            </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- Right Column -->
+        <!-- RIGHT COLUMN -->
         <div class="col-lg-3">
-            <!-- Calendar -->
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-white fw-bold">Sales Trend</div>
+                <div class="card-body">
+                    <div style="height: 150px; width: 250px;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!-- Schedules -->
             <div class="card shadow-sm border-0 mb-3">
                 <div class="card-header bg-white fw-bold">Schedules</div>
                 <div class="card-body">
-                    <p class="small text-muted">Upcoming Events</p>
+                    <p class="small text-muted mb-2">Upcoming Events</p>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <span><i class="fa-solid fa-truck text-info me-2"></i> Beef Delivery</span>
@@ -245,30 +181,32 @@
                 </div>
             </div>
 
-            <!-- Stock Progress -->
+            <!-- Stock Status -->
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white fw-bold">Stock Status</div>
                 <div class="card-body">
-                    <p>Restock Progress</p>
-                    <div class="progress mb-2">
-                        <div class="progress-bar bg-success" style="width: 60%;">60%</div>
+                    <p class="mb-2">Restock Progress</p>
+                    <div class="progress mb-2" style="height: 20px;">
+                        <div class="progress-bar bg-success fw-semibold" style="width: 60%">60%</div>
                     </div>
-                    <p class="mb-0 small text-muted">60% of low-stock items restocked</p>
+                    <small class="text-muted">60% of low-stock items restocked</small>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Greeting Script -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const greetingElement = document.getElementById("greeting");
     const messageElement = document.getElementById("message");
-    const now = new Date();
-    const hour = now.getHours();
+    const hour = new Date().getHours();
+    let greeting = "",
+        message = "";
 
-    let greeting = "";
-    let message = "";
     if (hour >= 5 && hour < 12) {
         greeting = "Good Morning, Chef 👨‍🍳";
         message = "Let's prepare delicious Korean dishes today!";
@@ -279,8 +217,103 @@ document.addEventListener("DOMContentLoaded", function() {
         greeting = "Good Evening, Chef 🌙";
         message = "Great work today, time to wrap up!";
     }
-    messageElement.textContent = message;
+
     greetingElement.textContent = greeting;
+    messageElement.textContent = message;
+});
+
+const ctx = document.getElementById('salesChart').getContext('2d');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], // X-axis
+        datasets: [{
+            label: 'Sales',
+            data: [25000, 30000, 32000, 33000], // Y-axis
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.15)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#28a745',
+            pointRadius: 3,
+            pointHoverRadius: 5
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: '#333',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                padding: 8
+            },
+            title: {
+                display: true,
+                text: 'Weekly Sales Trend',
+                color: '#333',
+                font: {
+                    size: 13,
+                    weight: 'bold'
+                },
+                padding: {
+                    bottom: 10
+                }
+            }
+        },
+        scales: {
+            x: {
+                display: true,
+                title: {
+                    display: true,
+                    text: 'Weeks',
+                    color: '#333',
+                    font: {
+                        size: 12,
+                        weight: 'bold'
+                    }
+                },
+                grid: {
+                    color: '#eee'
+                },
+                ticks: {
+                    color: '#333',
+                    font: {
+                        size: 11
+                    }
+                }
+            },
+            y: {
+                display: true,
+                title: {
+                    display: true,
+                    text: 'Sales (₱)',
+                    color: '#333',
+                    font: {
+                        size: 12,
+                        weight: 'bold'
+                    }
+                },
+                beginAtZero: true,
+                grid: {
+                    color: '#eee'
+                },
+                ticks: {
+                    color: '#333',
+                    font: {
+                        size: 11
+                    }
+                }
+            }
+        }
+    }
 });
 </script>
+
 @endsection

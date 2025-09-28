@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
             <h5 class="fw-bold h5">Order ID <span class="text-primary">#ORD-1001</span></h5>
-            <p class="text-muted mb-0"> <span class="text-danger">Orders</span> / Order Details</p>
+            <p class="text-muted mb-0">Orders > <span class="text-danger">Order Details</span></p>
         </div>
         <span class="badge bg-warning text-dark px-3 py-2">On Process</span>
     </div>
