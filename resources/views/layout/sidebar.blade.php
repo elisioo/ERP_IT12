@@ -7,28 +7,33 @@
 <hr class="text-white mt-4">
 
 <ul class="nav nav-pills flex-column mb-auto">
-
-    <li>
-        <a href="#" class="nav-link active" aria-current="page">
+    <li class="{{ ($active ?? '') === 'dashboard' ? 'active' : '' }}">
+        <a href="{{ route('dashboard') }}"
+            class="nav-link {{ ($active ?? '') === 'dashboard' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-chart-line me-2"></i> Dashboard
         </a>
     </li>
-    <li>
-        <a href="#" class="nav-link text-white">
+
+    <li class="{{ ($active ?? '') === 'orders' ? 'active' : '' }}">
+        <a href="{{ route('orders') }}" class="nav-link {{ ($active ?? '') === 'orders' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-receipt me-2"></i> Orders
         </a>
     </li>
-    <li>
-        <a href="#" class="nav-link text-white">
+
+    <li class="{{ ($active ?? '') === 'products' ? 'active' : '' }}">
+        <a href="#" class="nav-link {{ ($active ?? '') === 'products' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-box-open me-2"></i> Products
         </a>
     </li>
-    <li>
-        <a href="#" class="nav-link text-white">
+
+    <li class="{{ ($active ?? '') === 'customers' ? 'active' : '' }}">
+        <a href="#" class="nav-link {{ ($active ?? '') === 'customers' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-users me-2"></i> Customers
         </a>
     </li>
 </ul>
+
+
 
 
 

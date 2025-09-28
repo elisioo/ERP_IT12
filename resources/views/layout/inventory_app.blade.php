@@ -17,10 +17,11 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3 col-lg-2 bg-dark p-3 vh-100 d-flex flex-column">
-                @include('layout.sidebar')
+                @include('layout.sidebar', ['active' => $page ?? request()->route('page') ?? 'dashboard'])
+
             </div>
             <div class="col-md-9 col-lg-10 px-md-4 py-4">
-                @include('inventory.dashboard')
+                @yield('content')
             </div>
         </div>
     </div>

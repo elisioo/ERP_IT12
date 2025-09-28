@@ -1,3 +1,7 @@
+@extends('layout.inventory_app')
+
+@section('content')
+
 <div class="container-fluid">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
@@ -235,3 +239,4 @@ document.addEventListener("DOMContentLoaded", function() {
 
 });
 </script>
+@endsection
