@@ -23,6 +23,10 @@ Route::get('/menus', function () {
     return view('inventory.menus', ['page' => 'menus']);
 })->name('menus');
 
+Route::get('/menus/add', function () {
+    return view('inventory.addMenu', ['page' => 'menus']);
+})->name('menus.add');
+
 // Route::prefix('inventory')->group(function () {
 //     Route::get('/', function () {
 //         return view('inventory.dashboard');

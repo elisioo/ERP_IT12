@@ -8,7 +8,8 @@
             <h5 class="fw-bold h5">Menu</h5>
             <p class="text-muted mb-0">Browse and manage restaurant menu items</p>
         </div>
-        <a href="#" class="btn btn-primary btn-sm">+ Add New Item</a>
+        <a href="{{ route('menus.add') }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add New
+            Item</a>
     </div>
 
     <div class="row">
