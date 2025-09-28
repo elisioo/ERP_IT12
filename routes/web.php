@@ -14,6 +14,15 @@ Route::get('/dashboard', function () {
 Route::get('/orders', function () {
     return view('inventory.order', ['page' => 'orders']);
 })->name('orders');
+
+Route::get('/orders/order-details', function () {
+    return view('inventory.orderDetails', ['page' => 'orders']);
+})->name('orders.details');
+
+Route::get('/menus', function () {
+    return view('inventory.menus', ['page' => 'menus']);
+})->name('menus');
+
 // Route::prefix('inventory')->group(function () {
 //     Route::get('/', function () {
 //         return view('inventory.dashboard');

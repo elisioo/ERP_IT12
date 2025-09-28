@@ -20,15 +20,19 @@
         </a>
     </li>
 
-    <li class="{{ ($active ?? '') === 'products' ? 'active' : '' }}">
-        <a href="#" class="nav-link {{ ($active ?? '') === 'products' ? 'active' : 'text-white' }}">
-            <i class="fa-solid fa-box-open me-2"></i> Products
+    <li class="{{ ($active ?? '') === 'menus' ? 'active' : '' }}">
+        <a href="{{ route('menus') }}" class="nav-link {{ ($active ?? '') === 'menus' ? 'active' : 'text-white' }}">
+            <i class="fa-solid fa-clipboard-list me-2"></i> Menu
         </a>
     </li>
-
+    <li class="{{ ($active ?? '') === 'suppliers' ? 'active' : '' }}">
+        <a href="#" class="nav-link {{ ($active ?? '') === 'suppliers' ? 'active' : 'text-white' }}">
+            <i class="fa-solid fa-truck-fast me-2"></i> Suppliers
+        </a>
+    </li>
     <li class="{{ ($active ?? '') === 'customers' ? 'active' : '' }}">
         <a href="#" class="nav-link {{ ($active ?? '') === 'customers' ? 'active' : 'text-white' }}">
-            <i class="fa-solid fa-users me-2"></i> Customers
+            <i class="fa-solid fa-box-open me-2"></i> Inventory
         </a>
     </li>
 </ul>
@@ -60,5 +64,6 @@
 .active {
     background-color: #ffffffff !important;
     color: #212529 !important;
+    border-radius: 0.375rem !important;
 }
 </style>
