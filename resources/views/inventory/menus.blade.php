@@ -8,7 +8,7 @@
             <h5 class="fw-bold h5">Menu</h5>
             <p class="text-muted mb-0">Browse and manage restaurant menu items</p>
         </div>
-        <a href="{{ route('menus.add') }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add New
+        <a href="{{ route('menus.create') }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add New
             Item</a>
     </div>
 
@@ -18,55 +18,50 @@
             <div class="card shadow-sm border-0 mb-3">
                 <div class="card-body">
                     <!-- Search -->
-                    <form class="mb-3 d-flex">
-                        <input type="text" class="form-control form-control-sm" placeholder="Search menu...">
+                    <form class="mb-3 d-flex" method="GET" action="{{ route('menus.index') }}">
+                        <input type="text" name="search" class="form-control form-control-sm"
+                            placeholder="Search menu..." value="{{ request('search') }}">
                         <button class="btn btn-sm btn-primary ms-2">Search</button>
                     </form>
 
                     <!-- Category -->
                     <h6 class="fw-bold mb-2">Category</h6>
                     <div class="mb-3">
-                        <div><input type="checkbox" checked> Chicken</div>
-                        <div><input type="checkbox" checked> Beef</div>
-                        <div><input type="checkbox" checked> Pasta</div>
-                        <div><input type="checkbox"> Seafood</div>
-                        <div><input type="checkbox"> Pizza</div>
-                        <div><input type="checkbox"> Burgers</div>
-                        <div><input type="checkbox"> Desserts</div>
-                        <div><input type="checkbox"> Beverages</div>
+                        @foreach($categories as $category)
+                        <div>
+                            <input type="checkbox" name="category[]" value="{{ $category->id }}"
+                                {{ in_array($category->id, request('category', [])) ? 'checked' : '' }}>
+                            {{ $category->category_name }}
+                        </div>
+                        @endforeach
                     </div>
 
                     <!-- Meal Time -->
                     <h6 class="fw-bold mb-2">Meal Times</h6>
                     <div class="mb-3">
-                        <div><input type="checkbox" checked> Breakfast</div>
-                        <div><input type="checkbox"> Lunch</div>
-                        <div><input type="checkbox"> Dinner</div>
-                        <div><input type="checkbox"> Snack</div>
+                        @foreach(['Breakfast','Lunch','Dinner','Snack'] as $meal)
+                        <div>
+                            <input type="checkbox" name="meal_time[]" value="{{ $meal }}"
+                                {{ in_array($meal, request('meal_time', [])) ? 'checked' : '' }}>
+                            {{ $meal }}
+                        </div>
+                        @endforeach
                     </div>
 
                     <!-- Price Range -->
                     <h6 class="fw-bold mb-2">Price Range</h6>
                     <div class="mb-3">
-                        <div><input type="radio" name="price"> ₱100 - ₱200</div>
-                        <div><input type="radio" name="price"> ₱200 - ₱500</div>
-                        <div><input type="radio" name="price" checked> ₱500+</div>
+                        <div><input type="radio" name="price" value="100-200"> ₱100 - ₱200</div>
+                        <div><input type="radio" name="price" value="200-500"> ₱200 - ₱500</div>
+                        <div><input type="radio" name="price" value="500+"> ₱500+</div>
                     </div>
 
                     <!-- Rating -->
                     <h6 class="fw-bold mb-2">Rating</h6>
                     <div class="mb-3">
-                        <div><input type="radio" name="rating"> ★★★★★</div>
-                        <div><input type="radio" name="rating"> ★★★★☆ & up</div>
-                        <div><input type="radio" name="rating"> ★★★☆☆ & up</div>
-                    </div>
-
-                    <!-- Promos -->
-                    <h6 class="fw-bold mb-2">Promos</h6>
-                    <div>
-                        <button class="btn btn-sm btn-outline-primary mb-2">Buy 1 Get 1 Free</button>
-                        <button class="btn btn-sm btn-outline-primary mb-2">Seasonal Offer</button>
-                        <button class="btn btn-sm btn-outline-primary mb-2">10% Off</button>
+                        <div><input type="radio" name="rating" value="5"> ★★★★★</div>
+                        <div><input type="radio" name="rating" value="4"> ★★★★☆ & up</div>
+                        <div><input type="radio" name="rating" value="3"> ★★★☆☆ & up</div>
                     </div>
                 </div>
             </div>
@@ -75,30 +70,44 @@
         <!-- Menu Items Column -->
         <div class="col-lg-9">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="mb-0 text-muted">Showing 1–8 of 56 items</p>
-                <select class="form-select form-select-sm w-auto">
-                    <option>Sort by: Popular</option>
-                    <option>Price: Low to High</option>
-                    <option>Price: High to Low</option>
-                    <option>Newest</option>
+                <p class="mb-0 text-muted">Showing {{ $menus->firstItem() }}–{{ $menus->lastItem() }} of
+                    {{ $menus->total() }} items</p>
+                <select class="form-select form-select-sm w-auto" onchange="window.location.href=this.value;">
+                    <option value="{{ route('menus.index', ['sort' => 'popular']) }}">Sort by: Popular</option>
+                    <option value="{{ route('menus.index', ['sort' => 'price_asc']) }}">Price: Low to High</option>
+                    <option value="{{ route('menus.index', ['sort' => 'price_desc']) }}">Price: High to Low</option>
+                    <option value="{{ route('menus.index', ['sort' => 'newest']) }}">Newest</option>
                 </select>
             </div>
 
             <div class="row">
-                <!-- Example Card -->
+                @forelse($menus as $menu)
                 <div class="col-md-3 mb-4">
                     <div class="card border-0 shadow-sm h-100">
-                        <img src="/images/pizza.jpg" class="card-img-top" style="height:150px;object-fit:cover;">
+                        <img src="{{ $menu->image ? asset('storage/'.$menu->image) : '/images/default.jpg' }}"
+                            class="card-img-top" style="height:150px;object-fit:cover;">
                         <div class="card-body text-center">
-                            <h6 class="fw-bold mb-1">Smokey Supreme Pizza</h6>
-                            <small class="text-muted d-block">Pizza</small>
-                            <div class="mb-2 text-warning">★★★★☆ (4.5)</div>
-                            <h6 class="fw-bold text-primary mb-2">₱650.00</h6>
+                            <h6 class="fw-bold mb-1">{{ $menu->menu_name }}</h6>
+                            <small
+                                class="text-muted d-block">{{ $menu->category?->category_name ?? 'Uncategorized' }}</small>
+                            <div class="mb-2 text-warning">
+                                @for($i=1; $i<=5; $i++) @if($i <=floor($menu->rating))
+                                    ★
+                                    @elseif($i == ceil($menu->rating) && $menu->rating != floor($menu->rating))
+                                    ☆
+                                    @else
+                                    ☆
+                                    @endif
+                                    @endfor
+                                    ({{ number_format($menu->rating,1) }})
+                            </div>
+                            <h6 class="fw-bold text-primary mb-2">₱{{ number_format($menu->price, 2) }}</h6>
 
                             <!-- Action Buttons -->
                             <div class="d-flex justify-content-center gap-2">
-                                <a href="#" class="btn btn-sm btn-dark">Edit</a>
-                                <form action="#" method="POST" onsubmit="return confirm('Delete this item?')">
+                                <a href="{{ route('menus.edit', $menu->id) }}" class="btn btn-sm btn-dark">Edit</a>
+                                <form action="{{ route('menus.destroy', $menu->id) }}" method="POST"
+                                    onsubmit="return confirm('Delete this item?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-dark">Delete</button>
@@ -107,44 +116,14 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Another Example -->
-                <div class="col-md-3 mb-4">
-                    <div class="card border-0 shadow-sm h-100">
-                        <img src="/images/salmon.jpg" class="card-img-top" style="height:150px;object-fit:cover;">
-                        <div class="card-body text-center">
-                            <h6 class="fw-bold mb-1">Grilled Salmon</h6>
-                            <small class="text-muted d-block">Seafood</small>
-                            <div class="mb-2 text-warning">★★★★★ (4.7)</div>
-                            <h6 class="fw-bold text-primary mb-2">₱1,200.00</h6>
-
-                            <!-- Action Buttons -->
-                            <div class="d-flex justify-content-center gap-2">
-                                <a href="#" class="btn btn-sm btn-dark">Edit</a>
-                                <form action="#" method="POST" onsubmit="return confirm('Delete this item?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-dark">Delete</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- More items here... -->
+                @empty
+                <p class="text-muted">No menu items found.</p>
+                @endforelse
             </div>
 
             <!-- Pagination -->
             <div class="d-flex justify-content-center">
-                <nav>
-                    <ul class="pagination pagination-sm">
-                        <li class="page-item disabled"><a class="page-link">&laquo;</a></li>
-                        <li class="page-item active"><a class="page-link">1</a></li>
-                        <li class="page-item"><a class="page-link">2</a></li>
-                        <li class="page-item"><a class="page-link">3</a></li>
-                        <li class="page-item"><a class="page-link">&raquo;</a></li>
-                    </ul>
-                </nav>
+                {{ $menus->links('pagination::bootstrap-5') }}
             </div>
         </div>
     </div>

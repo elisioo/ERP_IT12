@@ -21,8 +21,8 @@
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-muted mb-1">Total Expenses (This Month)</h6>
-                        <h4 class="fw-bold text-danger">₱45,800</h4>
-                        <small class="text-muted">As of Sept 28, 2025</small>
+                        <h4 class="fw-bold text-danger">₱{{ number_format($totalThisMonth ?? 0, 2) }}</h4>
+                        <small class="text-muted">As of {{ \Carbon\Carbon::now()->format('M d, Y') }}</small>
                     </div>
                     <i class="fa-solid fa-receipt fa-2x text-danger"></i>
                 </div>
@@ -45,42 +45,36 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($expenses as $index => $expense)
                             <tr>
-                                <td>1</td>
-                                <td>Sept 25, 2025</td>
-                                <td>Utilities</td>
-                                <td>Electricity Bill</td>
-                                <td>₱12,000</td>
-                                <td><span class="badge bg-success">Paid</span></td>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ \Carbon\Carbon::parse($expense->date)->format('M d, Y') }}</td>
+                                <td>{{ $expense->category }}</td>
+                                <td>{{ $expense->description }}</td>
+                                <td>₱{{ number_format($expense->amount, 2) }}</td>
                                 <td>
-                                    <a href="#" class="btn btn-sm btn-outline-dark">Edit</a>
-                                    <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
+                                    @if($expense->status == 'paid')
+                                    <span class="badge bg-success">Paid</span>
+                                    @else
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <a href="{{ route('expenses.edit', $expense->id) }}"
+                                        class="btn btn-sm btn-outline-dark">Edit</a>
+                                    <form action="{{ route('expenses.destroy', $expense->id) }}" method="POST"
+                                        class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
+                            @empty
                             <tr>
-                                <td>2</td>
-                                <td>Sept 20, 2025</td>
-                                <td>Supplies</td>
-                                <td>Meat & Vegetables</td>
-                                <td>₱18,500</td>
-                                <td><span class="badge bg-success">Paid</span></td>
-                                <td>
-                                    <a href="#" class="btn btn-sm btn-outline-dark">Edit</a>
-                                    <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
-                                </td>
+                                <td colspan="7" class="text-center">No expenses found.</td>
                             </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>Sept 15, 2025</td>
-                                <td>Rent</td>
-                                <td>Monthly Shop Rent</td>
-                                <td>₱15,300</td>
-                                <td><span class="badge bg-warning text-dark">Pending</span></td>
-                                <td>
-                                    <a href="#" class="btn btn-sm btn-outline-dark">Edit</a>
-                                    <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
-                                </td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -94,18 +88,11 @@
                 <div class="card-header bg-white fw-bold">Expense Categories</div>
                 <div class="card-body">
                     <ul class="list-group list-group-flush small">
+                        @foreach($categoryTotals as $category => $total)
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Rent <span class="badge bg-primary">₱15,300</span>
+                            {{ $category }} <span class="badge bg-primary">₱{{ number_format($total, 2) }}</span>
                         </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Utilities <span class="badge bg-success">₱12,000</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Supplies <span class="badge bg-warning text-dark">₱18,500</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Salaries <span class="badge bg-info">₱0</span>
-                        </li>
+                        @endforeach
                     </ul>
                 </div>
             </div>
@@ -115,12 +102,10 @@
                 <div class="card-header bg-white fw-bold">Upcoming Payments</div>
                 <div class="card-body">
                     <ul class="list-group list-group-flush small">
-                        <li class="list-group-item"><i class="fa-solid fa-building text-primary me-2"></i> Rent Due -
-                            Oct 15</li>
-                        <li class="list-group-item"><i class="fa-solid fa-lightbulb text-warning me-2"></i> Electricity
-                            Bill - Oct 20</li>
-                        <li class="list-group-item"><i class="fa-solid fa-users text-info me-2"></i> Staff Salary - Oct
-                            25</li>
+                        @foreach($upcomingPayments as $payment)
+                        <li class="list-group-item"><i class="{{ $payment['icon'] }} me-2"></i> {{ $payment['title'] }}
+                            - {{ \Carbon\Carbon::parse($payment['date'])->format('M d') }}</li>
+                        @endforeach
                     </ul>
                 </div>
             </div>

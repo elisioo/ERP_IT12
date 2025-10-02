@@ -5,13 +5,13 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <h5 class="fw-bold h5">Add Menu Items</h5>
-        <a href="{{ route('menus') }}" class="btn btn-sm btn-outline-dark"><i
-                class="fa-solid fa-right-from-bracket"></i>
-            Back to Menu</a>
+        <a href="{{ route('menus.index') }}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-right-from-bracket"></i> Back to Menu
+        </a>
     </div>
 
     <!-- Add Menu Form -->
-    <form action="#" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('menus.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div id="menu-items-wrapper">
             <!-- One Menu Item Row -->
@@ -24,15 +24,10 @@
                         </div>
                         <div class="col-md-2">
                             <label class="form-label fw-bold">Category</label>
-                            <select name="items[0][category]" class="form-select">
-                                <option value="Chicken">Chicken</option>
-                                <option value="Beef">Beef</option>
-                                <option value="Seafood">Seafood</option>
-                                <option value="Pasta">Pasta</option>
-                                <option value="Pizza">Pizza</option>
-                                <option value="Burger">Burger</option>
-                                <option value="Dessert">Dessert</option>
-                                <option value="Beverage">Beverage</option>
+                            <select name="items[0][category]" class="form-select" required>
+                                @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->category_name }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-2">
@@ -41,11 +36,12 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Image</label>
-                            <input type="file" name="items[0][image]" class="form-control">
+                            <input type="file" name="items[0][image]" class="form-control" accept="image/*">
                         </div>
                         <div class="col-md-2 text-end">
-                            <button type="button" class="btn remove-item d-none text-danger"><i
-                                    class="fa-solid fa-square-minus"></i></button>
+                            <button type="button" class="btn remove-item d-none text-danger">
+                                <i class="fa-solid fa-square-minus"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -54,15 +50,16 @@
 
         <!-- Add More Button -->
         <div class="mb-3">
-            <button type="button" id="add-item" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-plus"></i>
-                Add
-                Another Item</button>
+            <button type="button" id="add-item" class="btn btn-outline-primary btn-sm">
+                <i class="fa-solid fa-plus"></i> Add Another Item
+            </button>
         </div>
 
         <!-- Submit -->
         <div class="text-end">
-            <button type="submit" class="btn btn-success btn-sm"><i class="fa-solid fa-floppy-disk"></i> Save All
-                Items</button>
+            <button type="submit" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-floppy-disk"></i> Save All Items
+            </button>
         </div>
     </form>
 </div>
@@ -81,7 +78,8 @@ document.getElementById('add-item').addEventListener('click', function() {
         let name = input.getAttribute('name');
         if (name) {
             input.setAttribute('name', name.replace(/\d+/, itemIndex));
-            input.value = '';
+            if (input.tagName === 'INPUT') input.value = '';
+            if (input.tagName === 'SELECT') input.selectedIndex = 0;
         }
     });
 

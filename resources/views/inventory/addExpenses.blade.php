@@ -5,11 +5,12 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <h5 class="fw-bold h5">Add Multiple Expenses</h5>
-        <a href="{{ route('expenses') }}" class="btn btn-sm btn-outline-dark"><i
-                class="fa-solid fa-right-from-bracket"></i> Back to Expenses</a>
+        <a href="{{ route('expenses.index') }}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-right-from-bracket"></i> Back to Expenses
+        </a>
     </div>
 
-    <form method="POST" action="#">
+    <form method="POST" action="{{ route('expenses.store') }}">
         @csrf
 
         <div id="expense-rows-wrapper">
@@ -49,8 +50,9 @@
                             </select>
                         </div>
                         <div class="col-md-1 text-end">
-                            <button type="button" class="btn remove-expense d-none text-danger"><i
-                                    class="fa-solid fa-square-minus"></i></button>
+                            <button type="button" class="btn remove-expense d-none text-danger">
+                                <i class="fa-solid fa-square-minus"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -86,7 +88,7 @@ document.getElementById('add-expense').addEventListener('click', function() {
         const name = input.getAttribute('name');
         if (name) {
             input.setAttribute('name', name.replace(/\d+/, expenseIndex));
-            input.value = '';
+            input.value = input.tagName === 'SELECT' ? input.options[0].value : '';
         }
     });
 
@@ -101,7 +103,7 @@ document.getElementById('add-expense').addEventListener('click', function() {
     expenseIndex++;
 });
 
-// Optional: if somehow first row has remove button visible
+// Ensure remove button works on first row if needed
 document.querySelectorAll('.remove-expense').forEach(btn => {
     btn.addEventListener('click', function() {
         btn.closest('.expense-row').remove();

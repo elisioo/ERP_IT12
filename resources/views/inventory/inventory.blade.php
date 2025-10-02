@@ -5,7 +5,7 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
-            <h5 class="fw-bold h5">Inventory</h5>
+            <h5 class="fw-bold h5"> Inventory</h5>
             <p class="text-muted mb-0">Monitor stock levels and manage your menu items efficiently.</p>
         </div>
         <a href="#" class="btn btn-primary btn-sm">

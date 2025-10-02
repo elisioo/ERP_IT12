@@ -17,4 +17,10 @@ class Order extends Model
         'status',
         'total_amount',
     ];
+
+
+    public function items()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
