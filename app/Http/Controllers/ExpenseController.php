@@ -65,7 +65,7 @@ class ExpenseController extends Controller
     // Show edit expense form
     public function edit(Expense $expense)
     {
-        return view('expenses.edit', compact('expense'));
+        return view('inventory.editExpenses', compact('expense'), ['page' => 'expenses']);
     }
 
     // Update single expense

@@ -16,4 +16,9 @@ class Expense extends Model
         'amount',
         'status',
     ];
+
+    // Cast 'date' to a Carbon instance automatically
+    protected $casts = [
+        'date' => 'datetime',
+    ];
 }

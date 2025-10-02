@@ -30,53 +30,79 @@
 
             <!-- Expense List -->
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-white fw-bold">Expense Records</div>
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Expense Records</span>
+                    <!-- Ellipsis Dropdown for Bulk Actions -->
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="bulkActionsDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bulkActionsDropdown">
+                            <li>
+                                <a class="dropdown-item" href="#" id="bulkDeleteBtn" data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal" disabled>Delete Selected</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
                 <div class="card-body table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>Date</th>
-                                <th>Category</th>
-                                <th>Description</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($expenses as $index => $expense)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ \Carbon\Carbon::parse($expense->date)->format('M d, Y') }}</td>
-                                <td>{{ $expense->category }}</td>
-                                <td>{{ $expense->description }}</td>
-                                <td>₱{{ number_format($expense->amount, 2) }}</td>
-                                <td>
-                                    @if($expense->status == 'paid')
-                                    <span class="badge bg-success">Paid</span>
-                                    @else
-                                    <span class="badge bg-warning text-dark">Pending</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <a href="{{ route('expenses.edit', $expense->id) }}"
-                                        class="btn btn-sm btn-outline-dark">Edit</a>
-                                    <form action="{{ route('expenses.destroy', $expense->id) }}" method="POST"
-                                        class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="7" class="text-center">No expenses found.</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    <form id="bulkDeleteForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <input type="hidden" name="ids" id="selectedIds">
+
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll"></th>
+                                    <th>#</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($expenses as $index => $expense)
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="rowCheckbox" value="{{ $expense->id }}">
+                                    </td>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($expense->date)->format('M d, Y') }}</td>
+                                    <td>{{ $expense->category }}</td>
+                                    <td>{{ $expense->description }}</td>
+                                    <td>₱{{ number_format($expense->amount, 2) }}</td>
+                                    <td>
+                                        @if($expense->status == 'paid')
+                                        <span class="badge bg-success">Paid</span>
+                                        @else
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('expenses.edit', $expense->id) }}"
+                                            class="btn btn-sm btn-outline-dark">Edit</a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger singleDeleteBtn"
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                            data-url="{{ route('expenses.destroy', $expense->id) }}"
+                                            data-name="{{ $expense->description ?? $expense->category }}">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="8" class="text-center">No expenses found.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </form>
                 </div>
             </div>
         </div>
@@ -112,4 +138,74 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="expenseName"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger btn-sm" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteModal = document.getElementById('deleteModal');
+    const expenseName = document.getElementById('expenseName');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const selectAll = document.getElementById('selectAll');
+    const rowCheckboxes = document.querySelectorAll('.rowCheckbox');
+    const bulkDeleteForm = document.getElementById('bulkDeleteForm');
+    let deleteUrl = '';
+
+    // Handle individual delete buttons
+    document.querySelectorAll('.singleDeleteBtn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            deleteUrl = this.getAttribute('data-url');
+            expenseName.textContent = this.getAttribute('data-name');
+            confirmDeleteBtn.onclick = function() {
+                window.location.href = deleteUrl;
+            };
+        });
+    });
+
+    // Handle Select All checkbox
+    selectAll.addEventListener('change', function() {
+        rowCheckboxes.forEach(cb => cb.checked = this.checked);
+        bulkDeleteBtn.classList.toggle('disabled', !this.checked && ![...rowCheckboxes].some(cb => cb
+            .checked));
+    });
+
+    // Enable bulk delete if any checkbox is checked
+    rowCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            bulkDeleteBtn.classList.toggle('disabled', ![...rowCheckboxes].some(c => c
+                .checked));
+        });
+    });
+
+    // Bulk delete button click
+    bulkDeleteBtn.addEventListener('click', function() {
+        const selectedIds = [...rowCheckboxes].filter(cb => cb.checked).map(cb => cb.value);
+        if (selectedIds.length === 0) return;
+        expenseName.textContent = selectedIds.length + ' selected expense(s)';
+        confirmDeleteBtn.onclick = function() {
+            const idsInput = document.getElementById('selectedIds');
+            idsInput.value = selectedIds.join(',');
+            bulkDeleteForm.submit();
+        };
+    });
+});
+</script>
 @endsection

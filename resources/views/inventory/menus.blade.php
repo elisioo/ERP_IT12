@@ -8,8 +8,9 @@
             <h5 class="fw-bold h5">Menu</h5>
             <p class="text-muted mb-0">Browse and manage restaurant menu items</p>
         </div>
-        <a href="{{ route('menus.create') }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add New
-            Item</a>
+        <a href="{{ route('menus.create') }}" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus"></i> Add New Item
+        </a>
     </div>
 
     <div class="row">
@@ -60,8 +61,8 @@
                     <h6 class="fw-bold mb-2">Rating</h6>
                     <div class="mb-3">
                         <div><input type="radio" name="rating" value="5"> ★★★★★</div>
-                        <div><input type="radio" name="rating" value="4"> ★★★★☆ & up</div>
-                        <div><input type="radio" name="rating" value="3"> ★★★☆☆ & up</div>
+                        <div><input type="radio" name="rating" value="4"> ★★★★☆</div>
+                        <div><input type="radio" name="rating" value="3"> ★★★☆☆</div>
                     </div>
                 </div>
             </div>
@@ -91,12 +92,9 @@
                             <small
                                 class="text-muted d-block">{{ $menu->category?->category_name ?? 'Uncategorized' }}</small>
                             <div class="mb-2 text-warning">
-                                @for($i=1; $i<=5; $i++) @if($i <=floor($menu->rating))
-                                    ★
-                                    @elseif($i == ceil($menu->rating) && $menu->rating != floor($menu->rating))
-                                    ☆
-                                    @else
-                                    ☆
+                                @for($i=1; $i<=5; $i++) @if($i <=floor($menu->rating)) ★
+                                    @elseif($i == ceil($menu->rating) && $menu->rating != floor($menu->rating)) ☆
+                                    @else ☆
                                     @endif
                                     @endfor
                                     ({{ number_format($menu->rating,1) }})
@@ -106,12 +104,11 @@
                             <!-- Action Buttons -->
                             <div class="d-flex justify-content-center gap-2">
                                 <a href="{{ route('menus.edit', $menu->id) }}" class="btn btn-sm btn-dark">Edit</a>
-                                <form action="{{ route('menus.destroy', $menu->id) }}" method="POST"
-                                    onsubmit="return confirm('Delete this item?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-dark">Delete</button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal" data-url="{{ route('menus.destroy', $menu->id) }}"
+                                    data-name="{{ $menu->menu_name }}">
+                                    Delete
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -128,4 +125,44 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="menuName"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JS to handle delete modal -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var deleteModal = document.getElementById('deleteModal');
+    deleteModal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var url = button.getAttribute('data-url');
+        var name = button.getAttribute('data-name');
+        var form = deleteModal.querySelector('#deleteForm');
+        var menuName = deleteModal.querySelector('#menuName');
+
+        form.action = url;
+        menuName.textContent = name;
+    });
+});
+</script>
 @endsection
