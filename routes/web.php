@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\OrderController;
+
 
 Route::get('/', function () {
     return view('menu');
@@ -63,6 +65,19 @@ Route::prefix('menus')->group(function () {
     Route::post('/{menu}/rate', [MenuController::class, 'rate'])->name('menus.rate');
 });
 
+
+
+Route::prefix('orders')->group(function () {
+    Route::get('/', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/create', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('/store', [OrderController::class, 'store'])->name('orders.store');
+    Route::get('/{order}', [OrderController::class, 'show'])->name('orders.details');
+    Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
+    Route::put('/{order}', [OrderController::class, 'update'])->name('orders.update');
+    Route::delete('/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
+
+    Route::delete('/bulk-delete', [OrderController::class, 'bulkDelete'])->name('orders.bulkDelete');
+});
 
 // Route::prefix('inventory')->group(function () {
 //     Route::get('/', function () {

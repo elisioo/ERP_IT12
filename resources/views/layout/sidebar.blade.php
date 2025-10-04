@@ -20,7 +20,8 @@
     </li>
 
     <li class="{{ ($active ?? '') === 'orders' ? 'active' : '' }}">
-        <a href="{{ route('orders') }}" class="nav-link {{ ($active ?? '') === 'orders' ? 'active' : 'text-white' }}">
+        <a href="{{ route('orders.index') }}"
+            class="nav-link {{ ($active ?? '') === 'orders' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-receipt me-2"></i> Orders
         </a>
     </li>

@@ -26,9 +26,17 @@ class Menu extends Model
         return $this->belongsTo(Category::class);
     }
 
-    // Has many products (if a menu is linked to products)
-    public function products()
+    public function orderLines()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(OrderLine::class);
     }
+
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, 'order_lines')
+                    ->withPivot('quantity', 'price')
+                    ->withTimestamps();
+    }
+
+
 }

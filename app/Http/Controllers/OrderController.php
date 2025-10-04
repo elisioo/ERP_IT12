@@ -4,63 +4,108 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Order;
-use Illuminate\Support\Str;
+use App\Models\OrderLine;
+use App\Models\Menu;
 
 class OrderController extends Controller
 {
-    // List all orders
+    // Display all orders
     public function index()
     {
-        $orders = Order::orderBy('created_at','desc')->paginate(10);
+        $orders = Order::with(['lines.menu'])
+                       ->orderBy('order_date', 'desc')
+                       ->paginate(10);
 
-        // Counts for summary cards
         $summary = [
-            'total' => Order::count(),
-            'on_process' => Order::where('status','on_process')->count(),
-            'completed' => Order::where('status','completed')->count(),
-            'canceled' => Order::where('status','canceled')->count(),
+            'total'     => Order::count(),
+            'pending'   => Order::where('status', 'pending')->count(),
+            'processing'=> Order::where('status', 'processing')->count(),
+            'completed' => Order::where('status', 'completed')->count(),
+            'canceled'  => Order::where('status', 'canceled')->count(),
         ];
 
-        return view('orders.index', compact('orders','summary'));
+        $trendingMenus = Menu::where('is_available', true)
+            ->orderByDesc('rating')
+            ->take(3)
+            ->get();
+
+        $latestMenus = Menu::where('is_available', true)
+            ->latest()
+            ->take(3)
+            ->get();
+
+        $monthlyOrders = Order::whereMonth('order_date', now()->month)->count();
+        $yearlyOrders  = Order::whereYear('order_date', now()->year)->count();
+
+        return view('inventory.order', compact(
+            'orders',
+            'summary',
+            'trendingMenus',
+            'latestMenus',
+            'monthlyOrders',
+            'yearlyOrders'
+        ), ['page' => 'orders']);
     }
 
-    // Show form to create order
+    // Show create form
     public function create()
     {
-        return view('orders.create');
+        $menus = Menu::where('is_available', true)->get();
+        return view('inventory.addOrders', compact('menus'), ['page' => 'orders']);
     }
 
-    // Store new order
+    // Store new order with order lines
     public function store(Request $request)
     {
-        $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'items' => 'required|string',
-            'total' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,completed,canceled,on_process',
-        ]);
+        // Generate next order number
+        $latestOrder = Order::latest()->first();
+        $nextNumber = $latestOrder ? intval(substr($latestOrder->order_number, 4)) + 1 : 1;
+        $orderNumber = 'ORD-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
-        Order::create([
-            'order_number' => 'ORD-' . rand(1000,9999),
+        $order = Order::create([
+            'order_number'  => $orderNumber,
             'customer_name' => $request->customer_name,
-            'items' => $request->items,
-            'total' => $request->total,
-            'status' => $request->status,
+            'order_date'    => $request->order_date,
+            'status'        => $request->status ?? 'pending',
+            'total_amount'  => 0, // will calculate below
         ]);
 
-        return redirect()->route('orders.index')->with('success','Order created successfully!');
+        $total = 0;
+
+        if ($request->has('items')) {
+            foreach ($request->items as $item) {
+                $menu = Menu::find($item['menu_id']);
+                if ($menu) {
+                    $lineTotal = $menu->price * $item['quantity'];
+                    OrderLine::create([
+                        'order_id' => $order->id,
+                        'menu_id'  => $menu->id,
+                        'quantity' => $item['quantity'],
+                        'price'    => $lineTotal,
+                    ]);
+                    $total += $lineTotal;
+                }
+            }
+        }
+
+        $order->update(['total_amount' => $total]);
+
+        return redirect()->route('orders.index')->with('success', 'Order created successfully!');
     }
 
-    // Show single order
+    // Show order details
     public function show(Order $order)
     {
+        $order->load(['lines.menu']);
         return view('orders.show', compact('order'));
     }
 
     // Show edit form
     public function edit(Order $order)
     {
-        return view('orders.edit', compact('order'));
+        $order->load(['lines.menu']);
+        $menus = Menu::where('is_available', true)->get();
+        return view('inventory.editOrders', compact('order', 'menus'), ['page' => 'orders']);
     }
 
     // Update order
@@ -68,20 +113,40 @@ class OrderController extends Controller
     {
         $request->validate([
             'customer_name' => 'required|string|max:255',
-            'items' => 'required|string',
-            'total' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,completed,canceled,on_process',
+            'order_date'    => 'required|date',
+            'status'        => 'required|in:pending,processing,completed,canceled',
         ]);
 
-        $order->update($request->all());
+        $order->update($request->only(['customer_name', 'order_date', 'status']));
 
-        return redirect()->route('orders.index')->with('success','Order updated successfully!');
+        // Reset order lines if items provided
+        if ($request->has('items')) {
+            $order->lines()->delete();
+
+            $total = 0;
+            foreach ($request->items as $item) {
+                $menu = Menu::find($item['menu_id']);
+                if ($menu) {
+                    $lineTotal = $menu->price * $item['quantity'];
+                    OrderLine::create([
+                        'order_id' => $order->id,
+                        'menu_id'  => $menu->id,
+                        'quantity' => $item['quantity'],
+                        'price'    => $lineTotal,
+                    ]);
+                    $total += $lineTotal;
+                }
+            }
+            $order->update(['total_amount' => $total]);
+        }
+
+        return redirect()->route('orders.index')->with('success', 'Order updated successfully!');
     }
 
     // Delete order
     public function destroy(Order $order)
     {
         $order->delete();
-        return redirect()->route('orders.index')->with('success','Order deleted successfully!');
+        return redirect()->route('orders.index')->with('success', 'Order deleted successfully!');
     }
 }
