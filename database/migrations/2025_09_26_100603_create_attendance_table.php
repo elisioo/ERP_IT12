@@ -15,9 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->date('date');
-            $table->time('time_in')->nullable();
-            $table->time('time_out')->nullable();
-            $table->decimal('hours_worked', 5, 2)->default(0);
             $table->enum('status', ['present', 'absent', 'late', 'leave'])->default('present');
             $table->timestamps();
         });

@@ -71,7 +71,7 @@
             <!-- Menu Cards -->
             <div class="d-flex justify-content-center gap-4 mt-2">
                 <!-- Employee -->
-                <a href="#" class="text-decoration-none text-dark">
+                <a href="{{route('employee.dashboard')}}" class="text-decoration-none text-dark">
                     <div class="border border_employee border-dark rounded-4 p-4 d-flex flex-column align-items-center justify-content-center shadow-sm"
                         style="width: 180px; height: 180px;">
                         <i class="fa-solid fa-id-badge fa-3x mb-3"></i>

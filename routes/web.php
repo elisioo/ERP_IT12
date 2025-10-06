@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\AttendanceController;
 
 Route::get('/', function () {
     return view('menu');
@@ -38,6 +40,16 @@ Route::get('/expenses/add', function () {
 Route::get('/inventory', function () {
     return view('inventory.inventory', ['page' => 'inventory']);
 })->name('inventory');
+
+Route::get('/employee/dashboard', [EmployeeController::class, 'dashboard'])
+->name('employee.dashboard');
+
+/*Route::get('/employee/attendance', [AttendanceController::class, 'attendance'])
+->name('employee.attendance'); */
+
+Route::get('/employee/attendance', [AttendanceController::class, 'attendance'])->name('attendance.index');
+Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->name('attendance.update');
+Route::post('/employee/attendance', [AttendanceController::class, 'store'])->name('employee.store');
 
 // Route::prefix('inventory')->group(function () {
 //     Route::get('/', function () {
