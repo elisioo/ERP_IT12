@@ -3,14 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Product extends Model
+class OrderLine extends Model
 {
-    protected $table = 'products';
+    use HasFactory;
+
     protected $fillable = [
         'order_id',
-        'category_id',
-        'product_name',
+        'menu_id',
         'quantity',
         'price',
     ];
@@ -18,10 +19,10 @@ class Product extends Model
     public function order()
     {
         return $this->belongsTo(Order::class);
-
     }
-    public function category()
+
+    public function menu()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Menu::class);
     }
 }
