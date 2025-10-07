@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Smart Energy Limiter - Wiring Guide</title>
+        <style>
+            body {
+                font-family: Arial;
+                margin: 40px;
+                background: #f9fafc;
+                color: #222;
+                line-height: 1.6;
+            }
+            h1 {
+                color: #00796b;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 20px 0;
+            }
+            th,
+            td {
+                border: 1px solid #ccc;
+                padding: 8px 12px;
+                text-align: left;
+            }
+            th {
+                background: #64e2b7;
+                color: #fff;
+            }
+            .note {
+                background: #e0f7fa;
+                padding: 10px;
+                border-left: 5px solid #00796b;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Smart Energy Limiter (ESP32 + Arduino + 3 Rooms)</h1>
+
+        <h2>🧠 Overview</h2>
+        <p>
+            ESP32 hosts the web dashboard and controls the 3 relays (Room 1–3).
+            Arduino UNO measures total current via ACS712 and sends data to
+            ESP32 through Serial2.
+        </p>
+
+        <h2>⚙️ Connection Summary</h2>
+        <table>
+            <tr>
+                <th>Component</th>
+                <th>ESP32 Pin</th>
+                <th>Arduino Pin</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Relay 1 IN</td>
+                <td>GPIO 25</td>
+                <td>—</td>
+                <td>Room 1 Control</td>
+            </tr>
+            <tr>
+                <td>Relay 2 IN</td>
+                <td>GPIO 26</td>
+                <td>—</td>
+                <td>Room 2 Control</td>
+            </tr>
+            <tr>
+                <td>Relay 3 IN</td>
+                <td>GPIO 27</td>
+                <td>—</td>
+                <td>Room 3 Control</td>
+            </tr>
+            <tr>
+                <td>Relay VCC</td>
+                <td>5V</td>
+                <td>—</td>
+                <td>Power</td>
+            </tr>
+            <tr>
+                <td>Relay GND</td>
+                <td>GND</td>
+                <td>GND</td>
+                <td>Common Ground</td>
+            </tr>
+            <tr>
+                <td>ACS712 VCC</td>
+                <td>—</td>
+                <td>5V</td>
+                <td>Sensor Power</td>
+            </tr>
+            <tr>
+                <td>ACS712 GND</td>
+                <td>GND</td>
+                <td>GND</td>
+                <td>Common Ground</td>
+            </tr>
+            <tr>
+                <td>ACS712 OUT</td>
+                <td>—</td>
+                <td>A0</td>
+                <td>Analog Reading</td>
+            </tr>
+            <tr>
+                <td>Arduino TX</td>
+                <td>GPIO 16 (RX2)</td>
+                <td>TX (Pin 1)</td>
+                <td>Serial Data to ESP32</td>
+            </tr>
+            <tr>
+                <td>GND</td>
+                <td>GND</td>
+                <td>GND</td>
+                <td>Shared Ground</td>
+            </tr>
+        </table>
+
+        <h2>⚡ Load Wiring</h2>
+        <p>Each relay controls one room (LED/Fan):</p>
+        <table>
+            <tr>
+                <th>Relay Terminal</th>
+                <th>Connection</th>
+            </tr>
+            <tr>
+                <td>COM</td>
+                <td>+5V (from ACS712 OUT)</td>
+            </tr>
+            <tr>
+                <td>NO</td>
+                <td>Load Positive (+)</td>
+            </tr>
+            <tr>
+                <td>Load Negative (-)</td>
+                <td>GND</td>
+            </tr>
+        </table>
+
+        <div class="note">
+            <strong>Tip:</strong> Wire all COM pins together to the ACS712
+            output. This way, ACS712 measures the <b>total current</b> of all 3
+            rooms combined.
+        </div>
+
+        <h2>🔌 Power</h2>
+        <ul>
+            <li>
+                Use a 5V 2A supply shared by ESP32, Arduino, relays, and ACS712.
+            </li>
+            <li>Connect all GNDs together.</li>
+        </ul>
+
+        <h2>🧩 Communication</h2>
+        <p>
+            Arduino sends serial data like: <code>I:1.25,P:275</code>. ESP32
+            parses and updates the dashboard.
+        </p>
+    </body>
+</html>

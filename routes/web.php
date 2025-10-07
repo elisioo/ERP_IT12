@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\UpcomingExpenseController;
 
 
 Route::get('/', function () {
@@ -18,10 +19,6 @@ Route::get('/dashboard', function () {
 Route::get('/orders', function () {
     return view('inventory.order', ['page' => 'orders']);
 })->name('orders');
-
-Route::get('/orders/order-details', function () {
-    return view('inventory.orderDetails', ['page' => 'orders']);
-})->name('orders.details');
 
 // Route::get('/menus', function () {
 //     return view('inventory.menus', ['page' => 'menus']);
@@ -54,6 +51,12 @@ Route::prefix('expenses')->group(function () {
     Route::delete('/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
 });
 
+Route::prefix('upcoming')->group(function () {
+    Route::post('/store', [UpcomingExpenseController::class, 'store'])->name('upcoming.store');
+    Route::put('/{id}/mark-paid', [UpcomingExpenseController::class, 'markPaid'])->name('upcoming.markPaid');
+    Route::put('/{id}/unmark', [UpcomingExpenseController::class, 'unmark'])->name('upcoming.unmark');
+});
+
 
 Route::prefix('menus')->group(function () {
     Route::get('/', [MenuController::class, 'index'])->name('menus.index');
@@ -71,7 +74,7 @@ Route::prefix('orders')->group(function () {
     Route::get('/', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('/store', [OrderController::class, 'store'])->name('orders.store');
-    Route::get('/{order}', [OrderController::class, 'show'])->name('orders.details');
+    Route::get('/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::put('/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::delete('/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');

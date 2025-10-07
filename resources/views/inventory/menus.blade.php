@@ -6,7 +6,7 @@
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
             <h5 class="fw-bold h5">Menu</h5>
-            <p class="text-muted mb-0">Browse and manage restaurant menu items</p>
+            <small class="text-muted mb-0">Browse and manage restaurant menu items</small>
         </div>
         <a href="{{ route('menus.create') }}" class="btn btn-primary btn-sm">
             <i class="fa-solid fa-plus"></i> Add New Item

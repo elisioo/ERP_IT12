@@ -4,12 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Expense;
-
+use App\Models\UpcomingPayment;
 class ExpenseController extends Controller
 {
     // Show all expenses
     public function index()
     {
+        $defaultPayments = [
+            ['title' => 'Electric Bill', 'icon' => 'fa-solid fa-bolt'],
+            ['title' => 'Water Bill', 'icon' => 'fa-solid fa-faucet'],
+            ['title' => 'Internet Bill', 'icon' => 'fa-solid fa-wifi'],
+            ['title' => 'Rent', 'icon' => 'fa-solid fa-house'],
+            ['title' => 'Tuition Fee', 'icon' => 'fa-solid fa-graduation-cap'],
+        ];
+
         // Get all expenses
         $expenses = Expense::orderBy('date', 'desc')->get();
 
@@ -28,12 +36,19 @@ class ExpenseController extends Controller
             ['title' => 'Electricity Bill', 'date' => now()->addDays(18), 'icon' => 'fa-solid fa-lightbulb text-warning'],
             ['title' => 'Staff Salary', 'date' => now()->addDays(23), 'icon' => 'fa-solid fa-users text-info'],
         ];
+        $upcomingPaymentsCalendar = UpcomingPayment::orderBy('date', 'asc')->get();
+        $upcomingPaymentsStatus = UpcomingPayment::where('status', 'pending')->orderBy('date')->get();
+        $paidPayments = UpcomingPayment::where('status', 'paid')->orderByDesc('date')->get();
 
         return view('inventory.expenses', compact(
             'expenses',
             'totalThisMonth',
             'categoryTotals',
-            'upcomingPayments'
+            'upcomingPayments',
+            'upcomingPaymentsCalendar',
+            'defaultPayments',
+            'upcomingPaymentsStatus',
+            'paidPayments'
         ), ['page' => 'expenses']);
     }
 

@@ -9,23 +9,25 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('payrolls', function (Blueprint $table) {
+       Schema::create('upcoming_payments', function (Blueprint $table) {
             $table->id();
-            $table->string('pay_period');
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->decimal('total_amount', 10, 2)->default(0);
+            $table->string('title');
+            $table->string('icon')->nullable();
+            $table->date('date');
+            $table->enum('status', ['pending', 'paid'])->default('pending');
             $table->timestamps();
         });
+
     }
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('payroll');
+        //
     }
 };
