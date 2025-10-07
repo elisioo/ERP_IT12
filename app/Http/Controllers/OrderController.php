@@ -107,16 +107,17 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load(['lines.menu']);
-        return view('orders.show', compact('order'));
+        return view('inventory.orderDetails', compact('order'), ['page' => 'orders']);
     }
 
     // Show edit form
     public function edit(Order $order)
     {
-        $order->load(['lines.menu']);
-        $menus = Menu::where('is_available', true)->get();
+        $menus = Menu::all();
+        $order->load('lines'); 
         return view('inventory.editOrders', compact('order', 'menus'), ['page' => 'orders']);
     }
+
 
     // Update order
     public function update(Request $request, Order $order)

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Smart Energy Limiter - 1 Room Wiring Guide</title>
+        <style>
+            body {
+                font-family: "Segoe UI", Tahoma, sans-serif;
+                background: #f4f6f8;
+                margin: 0;
+                padding: 0;
+                text-align: center;
+                color: #333;
+            }
+            h1 {
+                background: #64e2b7;
+                color: #fff;
+                padding: 15px;
+                margin: 0;
+                font-size: 22px;
+                border-bottom: 3px solid #44b993;
+            }
+            .container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 20px;
+                padding: 20px;
+            }
+            .card {
+                background: #fff;
+                padding: 20px;
+                border-radius: 12px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                width: 300px;
+                text-align: left;
+            }
+            .title {
+                font-weight: bold;
+                font-size: 18px;
+                margin-bottom: 10px;
+                color: #222;
+            }
+            ul {
+                list-style-type: "⚡ ";
+                padding-left: 20px;
+                font-size: 15px;
+                line-height: 1.6;
+            }
+            footer {
+                margin-top: 30px;
+                padding: 10px;
+                background: #eef1f7;
+                font-size: 14px;
+                color: #555;
+            }
+            code {
+                background: #eee;
+                padding: 2px 5px;
+                border-radius: 4px;
+                font-size: 13px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Smart Energy Limiter - 1 Room Wiring Documentation</h1>
+
+        <div class="container">
+            <div class="card">
+                <div class="title">Arduino UNO Connections</div>
+                <ul>
+                    <li>
+                        <b>ACS712</b> current sensor:
+                        <ul>
+                            <li><code>VCC</code> → <code>5V</code></li>
+                            <li><code>GND</code> → <code>GND</code></li>
+                            <li><code>OUT</code> → <code>A0</code></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>Relay Module</b>:
+                        <ul>
+                            <li>
+                                <code>IN</code> → <code>D8</code> (relayPin)
+                            </li>
+                            <li><code>VCC</code> → <code>5V</code></li>
+                            <li><code>GND</code> → <code>GND</code></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>ESP32 Control Signal</b>:
+                        <ul>
+                            <li><code>D7</code> → <code>ESP32 GPIO23</code></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>Serial Connection</b>:
+                        <ul>
+                            <li>
+                                <code>TX (Pin 1)</code> →
+                                <code>ESP32 RX2 (GPIO16)</code>
+                            </li>
+                            <li><code>GND</code> → <code>ESP32 GND</code></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>LCD (I2C 0x27)</b> (optional):
+                        <ul>
+                            <li><code>VCC</code> → <code>5V</code></li>
+                            <li><code>GND</code> → <code>GND</code></li>
+                            <li><code>SDA</code> → <code>A4</code></li>
+                            <li><code>SCL</code> → <code>A5</code></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="title">ESP32 Connections</div>
+                <ul>
+                    <li>
+                        <b>WiFi Server</b>:
+                        <ul>
+                            <li>
+                                Handles dashboard at <code>http://[IP]/</code>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>Arduino Communication</b>:
+                        <ul>
+                            <li>
+                                <code>RX2 (GPIO16)</code> ←
+                                <code>Arduino TX</code>
+                            </li>
+                            <li><code>TX2 (GPIO17)</code> (optional)</li>
+                            <li><code>GND</code> ↔ <code>Arduino GND</code></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>Manual Override Control</b>:
+                        <ul>
+                            <li>
+                                <code>GPIO23</code> → <code>Arduino D7</code>
+                            </li>
+                            <li>LOW = Normal mode (Auto)</li>
+                            <li>HIGH = Manual override (Relay OFF)</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>Power</b>:
+                        <ul>
+                            <li><code>5V</code> from USB or external 5V</li>
+                            <li><code>GND</code> shared with Arduino</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="title">Relay → Load Wiring (1 Room)</div>
+                <ul>
+                    <li><b>Relay COM</b> → +5V (Power Source)</li>
+                    <li><b>Relay NO</b> → Load + (LED / Fan)</li>
+                    <li><b>Load −</b> → GND (Power Source)</li>
+                    <li>When Relay <b>ON</b>: COM ↔ NO → Load is powered</li>
+                    <li>When Relay <b>OFF</b>: COM ↔ NO open → Load off</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="title">ACS712 Wiring (Current Sensor)</div>
+                <ul>
+                    <li>
+                        Place <b>ACS712</b> in series with +5V line feeding
+                        load.
+                    </li>
+                    <li><b>IN terminal</b> → +5V Supply</li>
+                    <li><b>OUT terminal</b> → Relay COM pin</li>
+                    <li>
+                        It measures total load current drawn by relay output.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="title">Power Supply</div>
+                <ul>
+                    <li><b>+5V</b> → Arduino + ESP32 + Relay + ACS712</li>
+                    <li>
+                        <b>GND</b> → Common Ground (All devices must share GND)
+                    </li>
+                    <li>Recommended: 5V 2A regulated power supply</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            Developed by: <b>Soroño & Ducog</b> | Smart Energy Limiter 1-Room
+            Control
+        </footer>
+    </body>
+</html>

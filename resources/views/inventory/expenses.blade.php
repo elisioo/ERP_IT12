@@ -6,7 +6,7 @@
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
             <h5 class="h5 fw-bold">Expenses Management</h5>
-            <p class="text-muted mb-0">Track daily, weekly, and monthly expenses.</p>
+            <small class="text-muted mb-0">Track daily, weekly, and monthly expenses.</small>
         </div>
         <a href="{{ route('expenses.add') }}" class="btn btn-primary btn-sm">
             <i class="fa-solid fa-plus"></i> Add Expense
@@ -19,12 +19,18 @@
             <!-- Info Card -->
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-muted mb-1">Total Expenses (This Month)</h6>
-                        <h4 class="fw-bold text-danger">₱{{ number_format($totalThisMonth ?? 0, 2) }}</h4>
-                        <small class="text-muted">As of {{ \Carbon\Carbon::now()->format('M d, Y') }}</small>
+
+                    <div class="row g-3 align-items-center">
+                        <div class="col-auto">
+                            <i class="fa-solid fa-receipt fa-2x text-danger"></i>
+                        </div>
+                        <div class="col-auto">
+                            <h6 class="text-muted mb-1">Total Expenses (This Month)</h6>
+                            <h4 class="fw-bold text-danger">₱{{ number_format($totalThisMonth ?? 0, 2) }}</h4>
+                            <small class="text-muted">As of {{ \Carbon\Carbon::now()->format('M d, Y') }}</small>
+                        </div>
                     </div>
-                    <i class="fa-solid fa-receipt fa-2x text-danger"></i>
+
                 </div>
             </div>
 
@@ -124,20 +130,146 @@
             </div>
 
             <!-- Upcoming Payments -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white fw-bold">Upcoming Payments</div>
-                <div class="card-body">
+            <div class="card shadow-sm border-0 mb-3" id="upcomingPaymentsCard">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Upcoming Payments</span>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                        data-bs-target="#addPaymentModal">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+                <div class="card-body" id="upcomingPaymentsList">
+                    @if($upcomingPaymentsStatus->count())
                     <ul class="list-group list-group-flush small">
-                        @foreach($upcomingPayments as $payment)
-                        <li class="list-group-item"><i class="{{ $payment['icon'] }} me-2"></i> {{ $payment['title'] }}
-                            - {{ \Carbon\Carbon::parse($payment['date'])->format('M d') }}</li>
+                        @foreach($upcomingPaymentsStatus as $payment)
+                        <li class="list-group-item d-flex justify-content-between align-items-center upcoming-item"
+                            id="payment-{{ $payment->id }}">
+                            <div>
+                                <i class="{{ $payment->icon ?? 'fa-solid fa-calendar' }} me-2 text-primary"></i>
+                                <span class="fw-bold">{{ $payment->title }}</span>
+                                <small class="text-muted d-block">
+                                    Due: {{ \Carbon\Carbon::parse($payment->date)->format('M d, Y') }}
+                                </small>
+                            </div>
+                            <form action="{{ route('upcoming.markPaid', $payment->id) }}" method="POST"
+                                class="mark-paid-form m-0 p-0">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                            </form>
+                        </li>
                         @endforeach
                     </ul>
+                    @else
+                    <p class="text-muted mb-0">No upcoming payments.</p>
+                    @endif
                 </div>
             </div>
+
+            <!-- Payment History -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                    <span>Payment History</span>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#paymentHistoryCollapse" aria-expanded="false"
+                        aria-controls="paymentHistoryCollapse">
+                        <i class="fa-solid fa-clock-rotate-left"></i> View History
+                    </button>
+                </div>
+                <div id="paymentHistoryCollapse" class="collapse">
+                    <div class="card-body" id="paymentHistoryList">
+                        @if($paidPayments->count())
+                        <ul class="list-group list-group-flush small">
+                            @foreach($paidPayments as $payment)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i
+                                        class="{{ $payment->icon ?? 'fa-solid fa-calendar-check' }} me-2 text-success"></i>
+                                    <span class="fw-semibold">{{ $payment->title }}</span>
+                                    <small class="text-muted d-block">
+                                        Paid: {{ \Carbon\Carbon::parse($payment->date)->format('M d, Y') }}
+                                    </small>
+                                </div>
+                            </li>
+                            @endforeach
+                        </ul>
+                        @else
+                        <p class="text-muted mb-0">No paid payments yet.</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+
+
+
         </div>
     </div>
 </div>
+
+<!-- Add Upcoming Payment Modal -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1" aria-labelledby="addPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('upcoming.store') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="addPaymentModalLabel">Add Upcoming Payment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Static Payment Type Dropdown -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Payment Type</label>
+                        <select name="title" class="form-select" required>
+                            <option value="">-- Choose Payment --</option>
+                            <option value="Electric Bill" data-icon="fa-solid fa-bolt">⚡ Electric Bill</option>
+                            <option value="Water Bill" data-icon="fa-solid fa-faucet">🚰 Water Bill</option>
+                            <option value="Internet Bill" data-icon="fa-solid fa-wifi">🌐 Internet Bill</option>
+                            <option value="Rent" data-icon="fa-solid fa-house">🏠 Rent</option>
+                            <option value="Tuition Fee" data-icon="fa-solid fa-graduation-cap">🎓 Tuition Fee</option>
+                            <option value="Others" data-icon="fa-solid fa-coins">💰 Others</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Due Date</label>
+                        <input type="date" name="date" class="form-control" required>
+                    </div>
+
+                    <input type="hidden" name="icon" id="iconInput">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Add Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Automatically set the FontAwesome icon when the user selects a payment type
+document.addEventListener('DOMContentLoaded', function() {
+    const titleSelect = document.querySelector('select[name="title"]');
+    const iconInput = document.getElementById('iconInput');
+
+    titleSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const icon = selectedOption.getAttribute('data-icon');
+        iconInput.value = icon || 'fa-solid fa-calendar';
+    });
+});
+</script>
+
+
+
+
+
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -157,6 +289,56 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.mark-paid-form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': form.querySelector('[name="_token"]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new URLSearchParams(new FormData(form))
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    // Remove from upcoming list
+                    const item = document.getElementById(`payment-${result.id}`);
+                    item.classList.add('fade-out');
+                    setTimeout(() => item.remove(), 300);
+
+                    // Optionally add to history list
+                    const historyList = document.querySelector('#paymentHistoryList ul');
+                    if (historyList) {
+                        historyList.insertAdjacentHTML('afterbegin', `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fa-solid fa-calendar-check me-2 text-success"></i>
+                                    <span class="fw-semibold">${item.querySelector('.fw-bold').innerText}</span>
+                                    <small class="text-muted d-block">Paid: Today</small>
+                                </div>
+                            </li>
+                        `);
+                    }
+                }
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

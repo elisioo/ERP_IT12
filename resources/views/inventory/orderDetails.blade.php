@@ -1,15 +1,22 @@
 @extends('layout.inventory_app')
 
 @section('content')
-
 <div class="container-fluid">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
-            <h5 class="fw-bold h5">Order ID <span class="text-primary">#ORD-1001</span></h5>
+            <h5 class="fw-bold h5">Order ID <span class="text-primary">#{{ $order->order_number }}</span></h5>
             <p class="text-muted mb-0">Orders > <span class="text-danger">Order Details</span></p>
         </div>
-        <span class="badge bg-warning text-dark px-3 py-2">On Process</span>
+        <span class="badge 
+            @if($order->status == 'pending') bg-secondary
+            @elseif($order->status == 'processing') bg-warning text-dark
+            @elseif($order->status == 'completed') bg-success
+            @elseif($order->status == 'cancelled') bg-danger
+            @endif
+            px-3 py-2">
+            {{ ucfirst($order->status) }}
+        </span>
     </div>
 
     <div class="row">
@@ -30,31 +37,23 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse ($order->lines as $line)
                             <tr>
-                                <td>Bulgogi Beef</td>
-                                <td>1</td>
-                                <td>Extra sauce</td>
-                                <td>₱480.00</td>
-                                <td>₱480.00</td>
+                                <td>{{ $line->menu->menu_name ?? 'Unknown Item' }}</td>
+                                <td>{{ $line->quantity }}</td>
+                                <td>{{ $line->notes ?? '-' }}</td>
+                                <td>₱{{ number_format($line->price, 2) }}</td>
+                                <td>₱{{ number_format($line->quantity * $line->price, 2) }}</td>
                             </tr>
+                            @empty
                             <tr>
-                                <td>Bibimbap</td>
-                                <td>2</td>
-                                <td>No egg</td>
-                                <td>₱250.00</td>
-                                <td>₱500.00</td>
+                                <td colspan="5" class="text-center text-muted">No items found for this order.</td>
                             </tr>
-                            <tr>
-                                <td>Kimchi</td>
-                                <td>1</td>
-                                <td>Spicy</td>
-                                <td>₱150.00</td>
-                                <td>₱150.00</td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                     <div class="text-end mt-3">
-                        <h6 class="fw-bold">Total Amount: ₱1,130.00</h6>
+                        <h6 class="fw-bold">Total Amount: ₱{{ number_format($order->total_amount, 2) }}</h6>
                     </div>
                 </div>
             </div>
@@ -63,10 +62,10 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white fw-bold">Customer</div>
                 <div class="card-body">
-                    <p class="mb-1"><strong>Name:</strong> Maria Santos</p>
-                    <p class="mb-1"><strong>Service Type:</strong> Dine-in (Table 5)</p>
-                    <p class="mb-1"><strong>Email:</strong> maria.santos@example.com</p>
-                    <p class="mb-0"><strong>Phone:</strong> 0912-345-6789</p>
+                    <p class="mb-1"><strong>Name:</strong> {{ $order->customer_name }}</p>
+                    <p class="mb-1"><strong>Service Type:</strong> {{ $order->service_type ?? 'N/A' }}</p>
+                    <p class="mb-1"><strong>Email:</strong> {{ $order->email ?? 'N/A' }}</p>
+                    <p class="mb-0"><strong>Phone:</strong> {{ $order->phone ?? 'N/A' }}</p>
                 </div>
             </div>
         </div>
@@ -80,20 +79,30 @@
                     <ul class="list-unstyled">
                         <li class="mb-3">
                             <span class="badge bg-success"><i class="fa-solid fa-check"></i></span>
-                            <span class="ms-2">Order Placed - 10:15 AM</span>
+                            <span class="ms-2">Order Placed - {{ $order->created_at->format('h:i A') }}</span>
                         </li>
+                        @if($order->status != 'pending')
                         <li class="mb-3">
                             <span class="badge bg-success"><i class="fa-solid fa-check"></i></span>
-                            <span class="ms-2">Order Confirmed - 10:30 AM</span>
+                            <span class="ms-2">Order Confirmed</span>
                         </li>
+                        @endif
+                        @if($order->status == 'processing')
                         <li class="mb-3">
                             <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock"></i></span>
-                            <span class="ms-2">On Process (Preparing Food)</span>
+                            <span class="ms-2">On Process (Preparing)</span>
                         </li>
+                        @elseif($order->status == 'completed')
                         <li>
-                            <span class="badge bg-secondary"><i class="fa-solid fa-hourglass-half"></i></span>
-                            <span class="ms-2">Completed (Ready for Pick-up / Served)</span>
+                            <span class="badge bg-success"><i class="fa-solid fa-check"></i></span>
+                            <span class="ms-2">Completed</span>
                         </li>
+                        @elseif($order->status == 'cancelled')
+                        <li>
+                            <span class="badge bg-danger"><i class="fa-solid fa-xmark"></i></span>
+                            <span class="ms-2">Cancelled</span>
+                        </li>
+                        @endif
                     </ul>
                 </div>
             </div>
@@ -102,22 +111,24 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white fw-bold">Update Status</div>
                 <div class="card-body">
-                    <form method="POST" action="#">
+                    <form method="POST" action="{{ route('orders.update', $order->id) }}">
                         @csrf
                         @method('PUT')
                         <div class="d-grid gap-2">
-                            <button type="submit" name="status" value="on_process" class="btn btn-warning">Mark as On
-                                Process</button>
-                            <button type="submit" name="status" value="completed" class="btn btn-success">Mark as
-                                Completed</button>
-                            <button type="submit" name="status" value="canceled" class="btn btn-danger">Cancel
-                                Order</button>
+                            <button type="submit" name="status" value="processing" class="btn btn-warning">
+                                Mark as On Process
+                            </button>
+                            <button type="submit" name="status" value="completed" class="btn btn-success">
+                                Mark as Completed
+                            </button>
+                            <button type="submit" name="status" value="cancelled" class="btn btn-danger">
+                                Cancel Order
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-
 </div>
 @endsection

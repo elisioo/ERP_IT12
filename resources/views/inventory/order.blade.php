@@ -88,7 +88,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <a href="{{ route('orders.details', $order->id) }}"
+                                        <a href="{{ route('orders.show', $order->id) }}"
                                             class="btn btn-sm btn-outline-dark">View</a>
                                         <a href="{{ route('orders.edit', $order->id) }}"
                                             class="btn btn-sm btn-outline-primary">
