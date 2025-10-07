@@ -13,7 +13,7 @@ return new class extends Migration
     {
        Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sales_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('sales_id'); // No foreign key constraint
             $table->decimal('amount', 10, 2);
             $table->dateTime('payment_date')->default(now());
             $table->enum('method', ['cash','credit_card','debit_card','online']);

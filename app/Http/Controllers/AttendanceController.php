@@ -11,15 +11,18 @@ class AttendanceController extends Controller
     /**
      * Show attendance view with employees + their attendances
      */
-    public function attendance()
+    public function attendance(Request $request)
     {
-        // Load ALL attendances, not just today
-        $employees = Employee::with('attendances')
-            ->orderBy('first_name', 'asc')
-            ->orderBy('last_name', 'asc')
-            ->get();
+        $selectedDate = $request->input('date', now()->toDateString());
 
-        return view('employee.attendance', compact('employees'));
+        $employees = Employee::with(['attendances' => function($q) use ($selectedDate) {
+            $q->where('date', $selectedDate);
+        }])
+        ->orderBy('first_name', 'asc')
+        ->orderBy('last_name', 'asc')
+        ->get();
+
+        return view('employee.attendance', compact('employees', 'selectedDate'));
     }
 
     /**
@@ -27,44 +30,55 @@ class AttendanceController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'status' => 'required|in:Present,Late,Absent',
+        // Normalize empty inputs to null
+        $request->merge([
+            'time_in' => $request->time_in === '' ? null : $request->time_in,
+            'time_out' => $request->time_out === '' ? null : $request->time_out,
         ]);
 
+        // 🕒 Remove seconds if present (e.g. "08:30:00" -> "08:30")
+        $request->merge([
+            'time_in' => $request->time_in ? substr($request->time_in, 0, 5) : null,
+            'time_out' => $request->time_out ? substr($request->time_out, 0, 5) : null,
+        ]);
+
+        // ✅ Validate inputs
+        $request->validate([
+            'time_in' => 'nullable|date_format:H:i',
+            'time_out' => 'nullable|date_format:H:i',
+            'date' => 'required|date',
+        ]);
+
+        // ✅ Update or create attendance record
         $attendance = Attendance::updateOrCreate(
+            ['employee_id' => $id, 'date' => $request->date],
             [
-                'employee_id' => $id,
-                'date' => now()->toDateString(),
-            ],
-            [
-                'status' => $request->status,
+                'time_in' => $request->time_in,
+                'time_out' => $request->time_out,
             ]
         );
 
-        // If AJAX, return JSON
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'status' => $attendance->status
-            ]);
-        }
-
-        // Fallback if not AJAX
-        return redirect()->back()->with('success', 'Attendance updated successfully!');
+        return response()->json([
+            'success' => true,
+            'time_in' => $attendance->time_in,
+            'time_out' => $attendance->time_out,
+        ]);
     }
 
-
     /**
-     * Add a new employee (used by the Add Employee modal in your blade)
+     * Add a new employee (used by the Add Employee modal)
      */
     public function store(Request $request)
     {
-        $request->validate(['first_name' => 'required|string|max:255',
-                            'last_name'  => 'required|string|max:255',
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
         ]);
 
-        $employee = Employee::create(['first_name' => $request->first_name,
-                                    'last_name' => $request->last_name,]);
+        Employee::create([
+            'first_name' => $request->first_name,
+            'last_name'  => $request->last_name,
+        ]);
 
         return redirect()->route('employee.dashboard')->with('success', 'Employee added.');
     }
@@ -75,7 +89,8 @@ class AttendanceController extends Controller
     public function destroy($id)
     {
         $employee = Employee::findOrFail($id);
-        $employee->delete(); // if you set foreign keys with cascade, attendances will be removed
+        $employee->delete(); // Cascade deletes attendance if FK setup
+
         return redirect()->back()->with('success', 'Employee deleted.');
     }
 }

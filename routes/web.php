@@ -1,6 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\AttendanceController;
+// Bulk delete orders
+Route::post('/orders/bulk-delete', [OrderController::class, 'bulkDelete'])->name('orders.bulkDelete');
+
+Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
 
 Route::get('/', function () {
     return view('menu');
@@ -39,6 +49,16 @@ Route::get('/inventory', function () {
     return view('inventory.inventory', ['page' => 'inventory']);
 })->name('inventory');
 
+Route::get('/employee/dashboard', [EmployeeController::class, 'dashboard'])->name('employee.dashboard');
+
+Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+
+Route::resource('menus', MenuController::class);
+
+Route::resource('expenses', ExpenseController::class);
+
+Route::get('/expenses/add', [ExpenseController::class, 'create'])->name('expenses.add');
+
 // Route::prefix('inventory')->group(function () {
 //     Route::get('/', function () {
 //         return view('inventory.dashboard');
@@ -53,3 +73,12 @@ Route::get('/inventory', function () {
 //         return view('inventory.view');
 //     })->name('inventory.view');
 // });
+
+Route::get('/employee/attendance', [AttendanceController::class, 'attendance'])->name('employee.attendance');
+Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->name('attendance.update');
+Route::post('/employee/add', [AttendanceController::class, 'store'])->name('employee.add');
+Route::post('/employee/store', [AttendanceController::class, 'store'])->name('employee.store');
+
+Route::get('/attendance', [AttendanceController::class, 'attendance'])->name('attendance.index');
+Route::delete('/employee/{id}', [AttendanceController::class, 'destroy'])->name('employee.delete');
+

@@ -9,6 +9,16 @@ use App\Models\Menu;
 
 class OrderController extends Controller
 {
+    // Bulk delete orders
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!is_array($ids) || empty($ids)) {
+            return redirect()->route('orders.index')->with('error', 'No orders selected for deletion.');
+        }
+        Order::whereIn('id', $ids)->delete();
+        return redirect()->route('orders.index')->with('success', 'Selected orders deleted successfully!');
+    }
     // Display all orders
     public function index()
     {

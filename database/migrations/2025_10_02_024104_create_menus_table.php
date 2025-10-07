@@ -19,7 +19,7 @@ return new class extends Migration
             $table->boolean('is_available')->default(true);
             $table->decimal('rating', 2, 1)->default(0); // e.g., 0.0 to 5.0
             $table->text('image')->nullable();
-            $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
+            $table->unsignedBigInteger('category_id')->nullable();
             $table->timestamps();
         });
 
