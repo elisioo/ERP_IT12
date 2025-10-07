@@ -16,6 +16,14 @@
             <label class="form-label">Last Name</label>
             <input type="text" name="last_name" class="form-control" required>
           </div>
+          <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input type="tel" name="phone" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control">
+          </div>
           <button type="submit" class="btn btn-success">Add</button>
         </form>
       </div>

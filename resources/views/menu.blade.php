@@ -50,9 +50,12 @@
     <div class="container-fluid vh-100 d-flex flex-column">
         <!-- Topbar -->
         <div class="d-flex justify-content-end align-items-center p-3 border-bottom">
-            <a href="" class="text-dark text-decoration-none">
-                Logout <i class="fa-solid fa-right-from-bracket ms-1"></i>
-            </a>
+            <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-link text-dark text-decoration-none p-0">
+                    Logout <i class="fa-solid fa-right-from-bracket ms-1"></i>
+                </button>
+            </form>
         </div>
 
         <!-- Main content -->

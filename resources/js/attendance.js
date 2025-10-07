@@ -44,9 +44,18 @@ document.addEventListener('DOMContentLoaded', function () {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
 
+            // Check if inputs are readonly (attendance completed)
+            const timeInInput = this.querySelector('.time-in-input');
+            const timeOutInput = this.querySelector('.time-out-input');
+            
+            if (timeInInput.hasAttribute('readonly') || timeOutInput.hasAttribute('readonly')) {
+                alert('Cannot edit attendance once time out is recorded.');
+                return;
+            }
+
             let employeeId = this.dataset.id;
-            let timeIn = this.querySelector('.time-in-input').value;
-            let timeOut = this.querySelector('.time-out-input').value;
+            let timeIn = timeInInput.value;
+            let timeOut = timeOutInput.value;
             let date = this.querySelector('.attendance-date').value;
 
             console.log(`Saving attendance for employee ${employeeId}`, {timeIn, timeOut, date});
@@ -66,8 +75,8 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(async res => {
                 if (!res.ok) {
-                    const errorText = await res.text();
-                    throw new Error(errorText);
+                    const errorData = await res.json();
+                    throw new Error(errorData.message || 'Failed to update attendance');
                 }
                 return res.json();
             })
@@ -76,12 +85,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     alert(`Updated:\nTime In - ${data.time_in || '--'}\nTime Out - ${data.time_out || '--'}`);
                     location.reload();
                 } else {
-                    alert('Failed to update attendance.');
+                    alert(data.message || 'Failed to update attendance.');
                 }
             })
             .catch(err => {
                 console.error(err);
-                alert('Something went wrong while saving attendance: ' + err.message);
+                alert('Error: ' + err.message);
             });
         });
     });

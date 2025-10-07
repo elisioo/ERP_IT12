@@ -15,14 +15,18 @@ class AttendanceController extends Controller
     {
         $selectedDate = $request->input('date', now()->toDateString());
 
-        $employees = Employee::with(['attendances' => function($q) use ($selectedDate) {
+        $employees = Employee::active()->with(['attendances' => function($q) use ($selectedDate) {
             $q->where('date', $selectedDate);
         }])
         ->orderBy('first_name', 'asc')
         ->orderBy('last_name', 'asc')
         ->get();
 
-        return view('employee.attendance', compact('employees', 'selectedDate'));
+        $allEmployees = Employee::orderBy('first_name', 'asc')
+        ->orderBy('last_name', 'asc')
+        ->get();
+
+        return view('employee.attendance', compact('employees', 'selectedDate', 'allEmployees'));
     }
 
     /**
@@ -30,26 +34,33 @@ class AttendanceController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Normalize empty inputs to null
+        $existingAttendance = Attendance::where('employee_id', $id)
+            ->where('date', $request->date)
+            ->first();
+
+        if ($existingAttendance && $existingAttendance->time_out) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot edit attendance once time out is recorded.'
+            ], 403);
+        }
+
         $request->merge([
             'time_in' => $request->time_in === '' ? null : $request->time_in,
             'time_out' => $request->time_out === '' ? null : $request->time_out,
         ]);
 
-        // 🕒 Remove seconds if present (e.g. "08:30:00" -> "08:30")
         $request->merge([
             'time_in' => $request->time_in ? substr($request->time_in, 0, 5) : null,
             'time_out' => $request->time_out ? substr($request->time_out, 0, 5) : null,
         ]);
 
-        // ✅ Validate inputs
         $request->validate([
             'time_in' => 'nullable|date_format:H:i',
             'time_out' => 'nullable|date_format:H:i',
             'date' => 'required|date',
         ]);
 
-        // ✅ Update or create attendance record
         $attendance = Attendance::updateOrCreate(
             ['employee_id' => $id, 'date' => $request->date],
             [
@@ -73,24 +84,52 @@ class AttendanceController extends Controller
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name'  => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
         ]);
 
         Employee::create([
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
+            'phone' => $request->phone,
+            'email' => $request->email,
         ]);
 
         return redirect()->route('employee.dashboard')->with('success', 'Employee added.');
     }
 
     /**
-     * Delete an employee
+     * Archive an employee
      */
     public function destroy($id)
     {
         $employee = Employee::findOrFail($id);
-        $employee->delete(); // Cascade deletes attendance if FK setup
+        $employee->archived_at = now();
+        $employee->save();
 
-        return redirect()->back()->with('success', 'Employee deleted.');
+        return redirect()->back()->with('success', 'Employee archived successfully.');
+    }
+
+    /**
+     * Restore an archived employee
+     */
+    public function restore($id)
+    {
+        $employee = Employee::findOrFail($id);
+        $employee->archived_at = null;
+        $employee->save();
+
+        return redirect()->back()->with('success', 'Employee restored successfully.');
+    }
+
+    /**
+     * Permanently delete an employee
+     */
+    public function forceDelete($id)
+    {
+        $employee = Employee::findOrFail($id);
+        $employee->delete();
+
+        return redirect()->back()->with('success', 'Employee permanently deleted.');
     }
 }

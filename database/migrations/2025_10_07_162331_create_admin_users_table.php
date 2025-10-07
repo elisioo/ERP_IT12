@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inventory', function (Blueprint $table) {
+        Schema::create('admin_users', function (Blueprint $table) {
             $table->id();
-
-            $table->unsignedBigInteger('product_id'); // No foreign key constraint
-            $table->foreignId('menu_id')->constrained()->cascadeOnDelete();
-            $table->integer('quantity')->default(0);
+            $table->string('username')->unique();
+            $table->string('password');
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventory');
+        Schema::dropIfExists('admin_users');
     }
 };

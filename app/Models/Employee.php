@@ -9,7 +9,21 @@ class Employee extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['first_name', 'last_name'];
+    protected $fillable = ['first_name', 'last_name', 'phone', 'email', 'hourly_rate', 'archived_at'];
+
+    protected $casts = [
+        'archived_at' => 'datetime'
+    ];
+
+    public function scopeActive($query)
+    {
+        return $query->whereNull('archived_at');
+    }
+
+    public function scopeArchived($query)
+    {
+        return $query->whereNotNull('archived_at');
+    }
 
     // Accessor for full name
     public function getFullNameAttribute()

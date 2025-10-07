@@ -9,12 +9,10 @@ use Illuminate\Support\Facades\Storage;
 
 class MenuController extends Controller
 {
-    // Show all menu items
     public function index(Request $request)
     {
         $query = Menu::with('category');
 
-        // Optional: apply filters (search, category, meal_time, price, rating)
         if ($search = $request->search) {
             $query->where('menu_name', 'like', "%{$search}%");
         }
@@ -37,7 +35,6 @@ class MenuController extends Controller
             $query->where('rating', '>=', $rating);
         }
 
-        // Optional: sorting
         if ($sort = $request->sort) {
             if ($sort == 'price_asc') $query->orderBy('price', 'asc');
             elseif ($sort == 'price_desc') $query->orderBy('price', 'desc');
@@ -49,13 +46,11 @@ class MenuController extends Controller
 
         $menus = $query->paginate(12)->withQueryString();
 
-        // Pass categories for filters
         $categories = Category::all();
 
         return view('inventory.menus', compact('menus', 'categories'), ['page' => 'menus']);
     }
 
-    // Show add menu form
     public function create()
     {
         $categories = Category::all(); // Fetch all categories from database
@@ -76,7 +71,7 @@ class MenuController extends Controller
         foreach ($request->items as $item) {
             // Handle image upload
             $imagePath = null;
-            if (isset($item['image'])) {
+            if (isset($item['image']) && $item['image']->isValid()) {
                 $imagePath = $item['image']->store('menus', 'public');
             }
 

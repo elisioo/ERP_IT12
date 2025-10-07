@@ -4,10 +4,20 @@
 
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Employee Attendance</h2>
-        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
-            <i class="fa fa-user-plus me-1"></i> Add Employee
-        </button>
+        <div>
+            <h2 class="mb-0 d-flex align-items-center">
+                <i class="fa-solid fa-clock me-2 text-primary"></i> Employee Attendance
+            </h2>
+            <small class="text-muted">Track and manage employee work hours</small>
+        </div>
+        <div>
+            <button class="btn btn-info btn-sm me-2" data-bs-toggle="modal" data-bs-target="#employeeListModal">
+                <i class="fa-solid fa-users me-1"></i> List of Employees
+            </button>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+                <i class="fa-solid fa-user-plus me-1"></i> Add Employee
+            </button>
+        </div>
     </div>
 
     <div class="mb-3">
@@ -50,16 +60,20 @@
                                 <td colspan="2">
                                     <form class="attendance-form d-flex align-items-center gap-2" data-id="{{ $employee->id }}">
                                         <input type="hidden" class="attendance-date" value="{{ $selectedDate }}">
-                                        <input type="time" class="form-control time-in-input" value="{{ $attendance->time_in ?? '' }}">
-                                        <input type="time" class="form-control time-out-input" value="{{ $attendance->time_out ?? '' }}">
-                                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                                        <input type="time" class="form-control time-in-input" value="{{ $attendance->time_in ?? '' }}" {{ $attendance && $attendance->time_out ? 'readonly' : '' }}>
+                                        <input type="time" class="form-control time-out-input" value="{{ $attendance->time_out ?? '' }}" {{ $attendance && $attendance->time_out ? 'readonly' : '' }}>
+                                        @if(!$attendance || !$attendance->time_out)
+                                            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                                        @else
+                                            <span class="badge bg-success">Completed</span>
+                                        @endif
                                     </form>
                                 </td>
                                 <td>
-                                    <form action="{{ route('employee.delete', $employee->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this employee?');">
+                                    <form action="{{ route('employee.delete', $employee->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to archive this employee?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                        <button type="submit" class="btn btn-warning btn-sm">Archive</button>
                                     </form>
                                 </td>
                             </tr>
@@ -71,7 +85,8 @@
     </div>
 </div>
 
-@extends('employee.modals.add_employee')
+@include('employee.modals.add_employee')
+@include('employee.modals.employee_list')
 
 @endsection
 @vite('resources/js/attendance.js')

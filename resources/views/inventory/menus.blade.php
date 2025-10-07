@@ -85,7 +85,7 @@
                 @forelse($menus as $menu)
                 <div class="col-md-3 mb-4">
                     <div class="card border-0 shadow-sm h-100">
-                        <img src="{{ $menu->image ? asset('storage/'.$menu->image) : '/images/default.jpg' }}"
+                        <img src="{{ $menu->image ? asset('storage/'.$menu->image) : 'https://via.placeholder.com/300x150?text=No+Image' }}"
                             class="card-img-top" style="height:150px;object-fit:cover;">
                         <div class="card-body text-center">
                             <h6 class="fw-bold mb-1">{{ $menu->menu_name }}</h6>
