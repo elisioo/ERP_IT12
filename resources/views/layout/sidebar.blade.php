@@ -1,7 +1,8 @@
 <!-- Sidebar -->
-<a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto ps-2 text-white text-decoration-none">
+<a href="{{ route('dashboard') }}"
+    class="d-flex align-items-center mb-3 mb-md-0 me-md-auto ps-2 text-white text-decoration-none">
     <div class="d-flex align-items-center">
-      <img src="{{ asset('img/kdr.png') }}" alt="Korean Diner Logo" style="width: 40px; height: 40px;" class="me-3">
+        <img src="{{ asset('img/kdr.png') }}" alt="Korean Diner Logo" style="width: 40px; height: 40px;" class="me-3">
         <div style="line-height: 1.1;">
             <span class="d-block fs-5 fw-bold">Korean Diner</span>
             <small class="text-white-50" style="font-size: 0.9rem;">Davao</small>
@@ -38,6 +39,11 @@
             <i class="fa-solid fa-sack-dollar me-2"></i> Expenses
         </a>
     </li>
+    <li class="{{ ($active ?? '') === 'category' ? 'active' : '' }}">
+        <a href="#" class="nav-link {{ ($active ?? '') === 'category' ? 'active' : 'text-white' }}">
+            <i class="fa-solid fa-layer-group me-2  "></i> Category
+        </a>
+    </li>
     <li class="{{ ($active ?? '') === 'inventory' ? 'active' : '' }}">
         <a href="{{ route('inventory') }}"
             class="nav-link {{ ($active ?? '') === 'inventory' ? 'active' : 'text-white' }}">
@@ -62,10 +68,18 @@
     <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
         <li><a class="dropdown-item" href="#">Settings</a></li>
         <li><a class="dropdown-item" href="#">Profile</a></li>
+
+        <li><a class="dropdown-item" href="/">Return</a></li>
+        <li><a class="dropdown-item" href="{{ route('employee.dashboard') }}">Manage Employee</a></li>
         <li>
             <hr class="dropdown-divider">
         </li>
-        <li><a class="dropdown-item" href="#">Sign out</a></li>
+        <li>
+            <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                @csrf
+                <button type="submit" class="dropdown-item">Sign out</button>
+            </form>
+        </li>
     </ul>
 </div>
 

@@ -90,6 +90,10 @@ Route::prefix('orders')->group(function () {
     Route::delete('/bulk-delete', [OrderController::class, 'bulkDelete'])->name('orders.bulkDelete');
 });
 
+Route::post('/upcoming/store', [UpcomingExpenseController::class, 'store'])->name('upcoming.store');
+Route::put('/upcoming/{id}/mark-paid', [UpcomingExpenseController::class, 'markPaid'])->name('upcoming.markPaid');
+Route::post('/upcoming/{id}/unmark', [UpcomingExpenseController::class, 'unmark'])->name('upcoming.unmark');
+
 // Route::prefix('inventory')->group(function () {
 //     Route::get('/', function () {
 //         return view('inventory.dashboard');
@@ -127,8 +131,3 @@ Route::get('/attendance', [AttendanceController::class, 'attendance'])->name('at
 Route::delete('/employee/{id}', [AttendanceController::class, 'destroy'])->name('employee.delete');
 Route::put('/employee/{id}/restore', [AttendanceController::class, 'restore'])->name('employee.restore');
 Route::delete('/employee/{id}/force-delete', [AttendanceController::class, 'forceDelete'])->name('employee.forceDelete');
-
-Route::post('/upcoming/store', [UpcomingExpenseController::class, 'store'])->name('upcoming.store');
-Route::post('/upcoming/{id}/mark-paid', [UpcomingExpenseController::class, 'markPaid'])->name('upcoming.markPaid');
-Route::post('/upcoming/{id}/unmark', [UpcomingExpenseController::class, 'unmark'])->name('upcoming.unmark');
-
