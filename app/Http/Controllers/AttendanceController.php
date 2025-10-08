@@ -99,6 +99,54 @@ class AttendanceController extends Controller
     }
 
     /**
+     * One-click time in/out toggle
+     */
+    public function toggle($id)
+    {
+        $today = now()->toDateString();
+        $currentTime = now()->format('H:i');
+        $displayTime = now()->format('g:i A');
+        
+        $attendance = Attendance::where('employee_id', $id)
+            ->where('date', $today)
+            ->first();
+
+        if (!$attendance) {
+            // First click - Time In
+            $attendance = Attendance::create([
+                'employee_id' => $id,
+                'date' => $today,
+                'time_in' => $currentTime,
+                'time_out' => null
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'action' => 'time_in',
+                'time_in' => $displayTime,
+                'message' => 'Time In recorded at ' . $displayTime
+            ]);
+        } elseif ($attendance->time_in && !$attendance->time_out) {
+            // Second click - Time Out
+            $attendance->update(['time_out' => $currentTime]);
+            
+            return response()->json([
+                'success' => true,
+                'action' => 'time_out',
+                'time_in' => \Carbon\Carbon::parse($attendance->time_in)->format('g:i A'),
+                'time_out' => $displayTime,
+                'message' => 'Time Out recorded at ' . $displayTime
+            ]);
+        } else {
+            // Already completed
+            return response()->json([
+                'success' => false,
+                'message' => 'Attendance already completed for today'
+            ]);
+        }
+    }
+
+    /**
      * Archive an employee
      */
     public function destroy($id)

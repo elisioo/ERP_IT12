@@ -7,7 +7,6 @@
             <h5 class="fw-bold h5 d-flex align-items-center">
                 <i class="fa-solid fa-chart-bar me-2 text-info"></i> Reports
             </h5>
-            <small class="text-muted">Generate attendance and payroll reports</small>
         </div>
     </div>
 

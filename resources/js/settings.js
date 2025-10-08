@@ -34,6 +34,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (settings.font_weight) {
             document.querySelector(`input[name="font_weight"][value="${settings.font_weight}"]`).checked = true;
         }
+        if (settings.animations !== undefined) {
+            document.getElementById('animationsToggle').checked = settings.animations;
+        }
+        if (settings.optimize !== undefined) {
+            document.getElementById('optimizeToggle').checked = settings.optimize;
+        }
         
         applySettings();
     }
@@ -42,6 +48,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const theme = document.querySelector('input[name="theme"]:checked')?.value || 'light';
         const fontSize = document.querySelector('select[name="font_size"]')?.value || 'medium';
         const fontWeight = document.querySelector('input[name="font_weight"]:checked')?.value || 'normal';
+        const animations = document.getElementById('animationsToggle')?.checked ?? true;
+        const optimize = document.getElementById('optimizeToggle')?.checked ?? false;
 
         // Apply theme
         document.body.setAttribute('data-theme', theme);
@@ -51,12 +59,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Apply font weight
         document.body.setAttribute('data-font-weight', fontWeight);
+        
+        // Apply animations
+        document.body.setAttribute('data-animations', animations ? 'enabled' : 'disabled');
+        
+        // Apply optimization
+        document.body.setAttribute('data-optimize', optimize ? 'enabled' : 'disabled');
 
         // Save to localStorage
         localStorage.setItem('userSettings', JSON.stringify({
             theme: theme,
             font_size: fontSize,
-            font_weight: fontWeight
+            font_weight: fontWeight,
+            animations: animations,
+            optimize: optimize
         }));
     }
 });

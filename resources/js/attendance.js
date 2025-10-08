@@ -39,58 +39,86 @@ document.addEventListener('DOMContentLoaded', function () {
         sortSelect.value = 'az';
     });
 
-    //Save attendance (PUT request)
-    document.querySelectorAll('.attendance-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Check if inputs are readonly (attendance completed)
-            const timeInInput = this.querySelector('.time-in-input');
-            const timeOutInput = this.querySelector('.time-out-input');
+    //One-click attendance toggle
+    document.querySelectorAll('.toggle-attendance').forEach(button => {
+        button.addEventListener('click', function() {
+            const employeeId = this.dataset.id;
+            const originalText = this.innerHTML;
             
-            if (timeInInput.hasAttribute('readonly') || timeOutInput.hasAttribute('readonly')) {
-                alert('Cannot edit attendance once time out is recorded.');
-                return;
-            }
+            // Disable button and show loading
+            this.disabled = true;
+            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
 
-            let employeeId = this.dataset.id;
-            let timeIn = timeInInput.value;
-            let timeOut = timeOutInput.value;
-            let date = this.querySelector('.attendance-date').value;
-
-            console.log(`Saving attendance for employee ${employeeId}`, {timeIn, timeOut, date});
-
-            fetch(`/attendance/${employeeId}`, {
-                method: 'PUT',
+            fetch(`/attendance/${employeeId}/toggle`, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    time_in: timeIn && timeIn.trim() !== '' ? timeIn : null,
-                    time_out: timeOut && timeOut.trim() !== '' ? timeOut : null,
-                    date: date
-                })
-            })
-            .then(async res => {
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    throw new Error(errorData.message || 'Failed to update attendance');
                 }
-                return res.json();
             })
+            .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    alert(`Updated:\nTime In - ${data.time_in || '--'}\nTime Out - ${data.time_out || '--'}`);
-                    location.reload();
+                    // Update time displays
+                    if (data.action === 'time_in') {
+                        document.getElementById(`time-in-${employeeId}`).textContent = data.time_in;
+                        // Add seconds display
+                        const timeInSeconds = document.getElementById(`time-in-seconds-${employeeId}`);
+                        if (timeInSeconds) {
+                            const now = new Date();
+                            timeInSeconds.textContent = now.toTimeString().substr(0, 8);
+                        }
+                        this.innerHTML = '<i class="fa-solid fa-clock"></i> Time Out';
+                        this.className = 'btn btn-warning btn-sm toggle-attendance';
+                    } else if (data.action === 'time_out') {
+                        document.getElementById(`time-out-${employeeId}`).textContent = data.time_out;
+                        // Add seconds display and calculate duration
+                        const timeOutSeconds = document.getElementById(`time-out-seconds-${employeeId}`);
+                        if (timeOutSeconds) {
+                            const now = new Date();
+                            timeOutSeconds.textContent = now.toTimeString().substr(0, 8);
+                        }
+                        // Calculate and display duration
+                        const timeInElement = document.getElementById(`time-in-${employeeId}`);
+                        const timeOutElement = document.getElementById(`time-out-${employeeId}`);
+                        const durationElement = document.getElementById(`duration-${employeeId}`);
+                        
+                        if (timeInElement && timeOutElement && durationElement) {
+                            // Simple duration calculation (this will be updated on page refresh for accuracy)
+                            durationElement.textContent = 'Calculating...';
+                        }
+                        
+                        this.outerHTML = '<span class="badge bg-success">Completed</span>';
+                    }
+                    
+                    // Show success message
+                    const toast = document.createElement('div');
+                    toast.className = 'alert alert-success alert-dismissible fade show position-fixed';
+                    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                    toast.innerHTML = `
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.body.appendChild(toast);
+                    
+                    // Auto remove toast after 3 seconds
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            toast.remove();
+                        }
+                    }, 3000);
                 } else {
-                    alert(data.message || 'Failed to update attendance.');
+                    alert(data.message);
+                    this.innerHTML = originalText;
                 }
+                this.disabled = false;
             })
             .catch(err => {
                 console.error(err);
-                alert('Error: ' + err.message);
+                alert('Error: Failed to record attendance');
+                this.innerHTML = originalText;
+                this.disabled = false;
             });
         });
     });

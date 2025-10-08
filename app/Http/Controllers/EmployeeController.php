@@ -13,58 +13,88 @@ class EmployeeController extends Controller
 {
     public function dashboard()
     {
-        $dashboardData = Cache::remember('dashboard_data_v2', 300, function () {
-            $today = now()->toDateString();
-            $currentMonth = now()->format('Y-m');
-            $employees = Employee::active()
-                ->with(['attendances' => function($q) use ($today) {
-                    $q->where('date', $today);
-                }])
-                ->get();
+        $today = now()->toDateString();
+        $employees = Employee::active()->get();
+        
+        // Get today's attendance
+        $todayAttendance = Attendance::where('date', $today)
+            ->whereIn('employee_id', $employees->pluck('id'))
+            ->get();
+            
+        $totalEmployees = $employees->count();
+        $presentCount = $todayAttendance->whereNotNull('time_in')->count();
+        $absentCount = $totalEmployees - $presentCount;
+        
+        // Calculate total hours for current month
+        $totalHours = Attendance::whereMonth('date', now()->month)
+            ->whereYear('date', now()->year)
+            ->whereNotNull('time_in')
+            ->whereNotNull('time_out')
+            ->get()
+            ->sum(function($attendance) {
+                try {
+                    $timeIn = \Carbon\Carbon::parse($attendance->time_in);
+                    $timeOut = \Carbon\Carbon::parse($attendance->time_out);
+                    return $timeOut->diffInMinutes($timeIn) / 60;
+                } catch (\Exception $e) {
+                    return 0;
+                }
+            });
+            
+        $dashboardData = [
+            'totalEmployees' => $totalEmployees,
+            'presentCount' => $presentCount,
+            'absentCount' => $absentCount,
+            'totalHours' => round($totalHours, 1),
+            'employees' => $employees
+        ];
 
-            $totalEmployees = $employees->count();
-            $presentCount = $employees->filter(function($emp) {
-                return $emp->attendances->whereNotNull('time_in')->count() > 0;
-            })->count();
-            $absentCount = $totalEmployees - $presentCount;
-
-            $totalHours = Attendance::whereMonth('date', now()->month)
-                ->whereYear('date', now()->year)
-                ->whereNotNull('time_in')
-                ->whereNotNull('time_out')
+        $currentMonth = now()->format('Y-m');
+        $totalSalary = Payroll::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->sum('gross_pay');
+        
+        // If no payroll data, calculate from attendance and hourly rates
+        if ($totalSalary == 0) {
+            $totalSalary = Employee::active()
+                ->whereNotNull('hourly_rate')
                 ->get()
-                ->sum(function($attendance) {
-                    $timeIn = strtotime($attendance->time_in);
-                    $timeOut = strtotime($attendance->time_out);
-                    if ($timeOut < $timeIn) $timeOut += 24 * 3600;
-                    return ($timeOut - $timeIn) / 3600;
+                ->sum(function($employee) {
+                    $monthlyHours = Attendance::where('employee_id', $employee->id)
+                        ->whereMonth('date', now()->month)
+                        ->whereYear('date', now()->year)
+                        ->whereNotNull('time_in')
+                        ->whereNotNull('time_out')
+                        ->get()
+                        ->sum(function($attendance) {
+                            try {
+                                $timeIn = \Carbon\Carbon::parse($attendance->time_in);
+                                $timeOut = \Carbon\Carbon::parse($attendance->time_out);
+                                return $timeOut->diffInMinutes($timeIn) / 60;
+                            } catch (\Exception $e) {
+                                return 0;
+                            }
+                        });
+                    return $monthlyHours * ($employee->hourly_rate ?? 100);
                 });
-
-            return [
-                'totalEmployees' => $totalEmployees,
-                'presentCount' => $presentCount,
-                'absentCount' => $absentCount,
-                'totalHours' => round($totalHours, 1),
-                'employees' => $employees
-            ];
-        });
-
-        $monthlyData = Cache::remember('dashboard_monthly_' . now()->format('Y-m'), 1800, function () {
-            $currentMonth = now()->format('Y-m');
-
-            return [
-                'totalSalary' => Payroll::where('period', $currentMonth)->sum('gross_pay'),
-                'recentEmployees' => Employee::active()->latest()->take(5)->get(),
-                'employeeHours' => $this->getEmployeeHours()
-            ];
-        });
-        $recentActivities = Cache::remember('dashboard_activities', 180, function () {
-            return Attendance::with('employee')
-                ->whereDate('created_at', '>=', now()->subDays(7))
-                ->latest()
-                ->take(10)
-                ->get();
-        });
+        }
+        $recentEmployees = Employee::active()->latest()->take(5)->get();
+        $employeeHours = [
+            'today' => $this->getEmployeeHours('today'),
+            'week' => $this->getEmployeeHours('week'), 
+            'month' => $this->getEmployeeHours('month')
+        ];
+        
+        $monthlyData = [
+            'totalSalary' => $totalSalary,
+            'recentEmployees' => $recentEmployees,
+            'employeeHours' => $employeeHours
+        ];
+        $recentActivities = Attendance::with('employee')
+            ->whereDate('date', '>=', now()->subDays(7))
+            ->latest('date')
+            ->take(10)
+            ->get();
 
         $notice = $this->generateNotice(
             $dashboardData['absentCount'],
@@ -79,33 +109,56 @@ class EmployeeController extends Controller
         ));
     }
 
-    private function getEmployeeHours()
+    private function getEmployeeHours($period = 'month')
     {
-        return Employee::active()
-            ->with(['attendances' => function($q) {
-                $q->whereMonth('date', now()->month)
-                  ->whereYear('date', now()->year)
-                  ->whereNotNull('time_in')
-                  ->whereNotNull('time_out');
-            }])
-            ->get()
-            ->map(function($employee) {
-                $totalHours = $employee->attendances->sum(function($attendance) {
-                    $timeIn = strtotime($attendance->time_in);
-                    $timeOut = strtotime($attendance->time_out);
-                    if ($timeOut < $timeIn) $timeOut += 24 * 3600;
-                    return ($timeOut - $timeIn) / 3600;
-                });
+        $employees = Employee::active()->get();
+        
+        $query = Attendance::whereNotNull('time_in')->whereNotNull('time_out');
+        
+        switch($period) {
+            case 'today':
+                $query->whereDate('date', now()->toDateString());
+                break;
+            case 'week':
+                $query->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()]);
+                break;
+            case 'month':
+            default:
+                $query->whereMonth('date', now()->month)->whereYear('date', now()->year);
+                break;
+        }
+        
+        $attendances = $query->get()->groupBy('employee_id');
+            
+        return $employees->map(function($employee) use ($attendances) {
+            $employeeAttendances = $attendances->get($employee->id, collect());
+            
+            $totalHours = $employeeAttendances->sum(function($attendance) {
+                try {
+                    if (!$attendance->time_in || !$attendance->time_out) {
+                        return 0;
+                    }
+                    
+                    $timeIn = \Carbon\Carbon::parse($attendance->time_in);
+                    $timeOut = \Carbon\Carbon::parse($attendance->time_out);
+                    
+                    // Handle same day calculation
+                    $hours = $timeOut->diffInMinutes($timeIn) / 60;
+                    return $hours > 0 ? $hours : 0;
+                } catch (\Exception $e) {
+                    return 0;
+                }
+            });
 
-                return [
-                    'name' => $employee->first_name . ' ' . $employee->last_name,
-                    'hours' => round($totalHours, 1)
-                ];
-            })
-            ->filter(fn($emp) => $emp['hours'] > 0)
-            ->sortByDesc('hours')
-            ->take(5)
-            ->values();
+            return [
+                'name' => $employee->first_name . ' ' . $employee->last_name,
+                'hours' => round($totalHours, 1)
+            ];
+        })
+        ->filter(fn($emp) => $emp['hours'] > 0)
+        ->sortByDesc('hours')
+        ->take(5)
+        ->values();
     }
 
     private function generateNotice($absentCount, $presentCount, $totalEmployees)

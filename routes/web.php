@@ -120,6 +120,7 @@ Route::get('/reports/payroll/pdf', [\App\Http\Controllers\ReportController::clas
 Route::post('/settings/update', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
 });
 Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->name('attendance.update');
+Route::post('/attendance/{id}/toggle', [AttendanceController::class, 'toggle'])->name('attendance.toggle');
 Route::post('/employee/add', [AttendanceController::class, 'store'])->name('employee.add');
 Route::post('/employee/store', [AttendanceController::class, 'store'])->name('employee.store');
 

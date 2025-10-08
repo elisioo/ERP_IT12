@@ -7,7 +7,6 @@
             <h5 class="fw-bold h5 d-flex align-items-center">
                 <i class="fa-solid fa-money-bill me-2 text-success"></i> Payroll
             </h5>
-            <small class="text-muted">Manage employee salary and payments</small>
         </div>
         <div class="d-flex gap-2">
             <form method="GET" class="d-flex align-items-center">
@@ -50,8 +49,8 @@
                     <tr>
                         <td>{{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}</td>
                         <td>
-                            <button class="btn btn-link p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#editRateModal" 
-                                    data-id="{{ $payroll->employee->id }}" data-name="{{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}" 
+                            <button class="btn btn-link p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#editRateModal"
+                                    data-id="{{ $payroll->employee->id }}" data-name="{{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}"
                                     data-rate="{{ $payroll->hourly_rate }}">
                                 ₱{{ number_format($payroll->hourly_rate, 2) }}
                             </button>

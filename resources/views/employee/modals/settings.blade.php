@@ -47,6 +47,24 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Animations -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Animations</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="animationsToggle" checked>
+                            <label class="form-check-label" for="animationsToggle">Enable animations</label>
+                        </div>
+                    </div>
+
+                    <!-- Performance -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Performance</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="optimizeToggle">
+                            <label class="form-check-label" for="optimizeToggle">Optimize for performance</label>
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
