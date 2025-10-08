@@ -1,7 +1,7 @@
 <!-- Sidebar -->
 <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto ps-2 text-white text-decoration-none">
     <div class="d-flex align-items-center">
-        <i class="fa-solid fa-bowl-food fa-lg me-3"></i> <!-- reduced from me-2 to me-1 -->
+      <img src="{{ asset('img/kdr.png') }}" alt="Korean Diner Logo" style="width: 40px; height: 40px;" class="me-3">
         <div style="line-height: 1.1;">
             <span class="d-block fs-5 fw-bold">Korean Diner</span>
             <small class="text-white-50" style="font-size: 0.9rem;">Davao</small>
