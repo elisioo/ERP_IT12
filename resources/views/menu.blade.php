@@ -112,9 +112,9 @@
             <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center">
                 <!-- Logo and Welcome -->
                 <div class="mb-4">
-                    <img src="{{ asset('img/kdr.png') }}" alt="Logo" class="logo" style="width:120px; height:auto;">
-                    <h1 class="h1 mb-1 custom-text-shadow ">Korean Diner Davao</h1>
-                    <p class="text-primary-emphasis custom-text-shadow">
+                    <img src="{{ asset('img/kdr.png') }}" alt="Logo" class="logo" style="width:150px; height:auto;">
+                    <h1 class="h1 mb-1 custom-text-shadow" style="font-size: 70px;">Korean Diner Davao</h1>
+                    <p class="custom-text-shadow" style="font-size: 1.2rem; color: #589bff;">
                         Your all-in-one ERP solution for employees and inventory.
                     </p>
                 </div>
