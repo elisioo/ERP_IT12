@@ -17,9 +17,6 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('email')->unique()->nullable();
             $table->string('phone')->nullable();
-            $table->date('hire_date')->nullable();
-            $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('role_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }
@@ -29,6 +26,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('attendances');
+        Schema::dropIfExists('salaries');
         Schema::dropIfExists('employees');
     }
 };

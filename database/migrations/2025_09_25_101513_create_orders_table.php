@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
 
 return new class extends Migration
 {
@@ -13,9 +15,12 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
-            $table->dateTime('order_date')->default(now());
-            $table->enum('status', ['pending','shipped','completed','cancelled'])->default('pending');
+            $table->string('order_number')->unique();
+            $table->string('customer_name');
+            $table->dateTime('order_date')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->enum('status', ['pending', 'processing', 'completed', 'canceled'])
+                  ->default('pending');
+            $table->decimal('total_amount', 10, 2)->default(0);
             $table->timestamps();
         });
     }

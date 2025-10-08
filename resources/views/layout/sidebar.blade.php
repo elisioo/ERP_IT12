@@ -1,10 +1,15 @@
 <!-- Sidebar -->
-<a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-    <span class="fs-4">
-        <i class="fa-solid fa-bowl-food me-2"></i> Inventory
-    </span>
+<a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto ps-2 text-white text-decoration-none">
+    <div class="d-flex align-items-center">
+        <i class="fa-solid fa-bowl-food fa-lg me-3"></i> <!-- reduced from me-2 to me-1 -->
+        <div style="line-height: 1.1;">
+            <span class="d-block fs-5 fw-bold">Korean Diner</span>
+            <small class="text-white-50" style="font-size: 0.9rem;">Davao</small>
+        </div>
+    </div>
 </a>
-<hr class="text-white mt-4">
+
+<hr class="text-white mt-3 mb-3">
 
 <ul class="nav nav-pills flex-column mb-auto">
     <li class="{{ ($active ?? '') === 'dashboard' ? 'active' : '' }}">
@@ -15,18 +20,20 @@
     </li>
 
     <li class="{{ ($active ?? '') === 'orders' ? 'active' : '' }}">
-        <a href="{{ route('orders') }}" class="nav-link {{ ($active ?? '') === 'orders' ? 'active' : 'text-white' }}">
+        <a href="{{ route('orders.index') }}"
+            class="nav-link {{ ($active ?? '') === 'orders' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-receipt me-2"></i> Orders
         </a>
     </li>
 
     <li class="{{ ($active ?? '') === 'menus' ? 'active' : '' }}">
-        <a href="{{ route('menus') }}" class="nav-link {{ ($active ?? '') === 'menus' ? 'active' : 'text-white' }}">
+        <a href="{{ route('menus.index') }}"
+            class="nav-link {{ ($active ?? '') === 'menus' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-clipboard-list me-2"></i> Menu
         </a>
     </li>
     <li class="{{ ($active ?? '') === 'expenses' ? 'active' : '' }}">
-        <a href="{{ route('expenses') }}"
+        <a href="{{ route('expenses.index') }}"
             class="nav-link {{ ($active ?? '') === 'expenses' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-sack-dollar me-2"></i> Expenses
         </a>

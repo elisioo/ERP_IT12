@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('category_name');
-            $table->timestamps();
+        Schema::table('employees', function (Blueprint $table) {
+            $table->timestamp('archived_at')->nullable()->after('hourly_rate');
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::table('employees', function (Blueprint $table) {
+            $table->dropColumn('archived_at');
+        });
     }
 };

@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sales', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
-            $table->dateTime('sales_date')->default(now());
-            $table->decimal('total', 10, 2);
-            $table->timestamps();
+        Schema::table('employees', function (Blueprint $table) {
+            $table->decimal('hourly_rate', 8, 2)->default(100.00)->after('last_name');
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sales');
+        Schema::table('employees', function (Blueprint $table) {
+            $table->dropColumn('hourly_rate');
+        });
     }
 };

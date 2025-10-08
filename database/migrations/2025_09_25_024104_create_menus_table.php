@@ -11,14 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('sales_lines', function (Blueprint $table) {
+       Schema::create('menus', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sales_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->integer('quantity');
+            $table->string('menu_name');
+            $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
+            $table->boolean('is_available')->default(true);
+            $table->decimal('rating', 2, 1)->default(0); // e.g., 0.0 to 5.0
+            $table->text('image')->nullable();
+            $table->unsignedBigInteger('category_id')->nullable();
             $table->timestamps();
         });
+
     }
 
     /**
@@ -26,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sales_lines');
+        Schema::dropIfExists('menus');
     }
 };

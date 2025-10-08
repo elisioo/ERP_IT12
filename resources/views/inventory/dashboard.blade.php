@@ -2,16 +2,6 @@
 
 @section('content')
 <div class="container-fluid">
-    <!-- Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-4">
-        <div>
-            <h5 id="greeting" class="h5 fw-bold"></h5>
-            <p class="text-muted mb-0" id="message"></p>
-        </div>
-        <a href="#" class="btn btn-primary btn-sm shadow-sm">
-            <i class="fa-solid fa-plus me-1"></i> Add Item
-        </a>
-    </div>
 
     <div class="row">
         <!-- LEFT COLUMN -->
@@ -106,47 +96,6 @@
                     </table>
                 </div>
             </div>
-
-            <!-- Inventory List -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white fw-bold">Inventory List</div>
-                <div class="card-body table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>Item Name</th>
-                                <th>Category</th>
-                                <th>Stock</th>
-                                <th>Price</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($inventoryItems ?? [] as $index => $item)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $item['name'] }}</td>
-                                <td>{{ $item['category'] }}</td>
-                                <td>
-                                    <span class="badge 
-                                        @if($item['stock'] == 0) bg-danger 
-                                        @elseif($item['stock'] < 5) bg-warning text-dark 
-                                        @else bg-success @endif">
-                                        {{ $item['stock'] }}
-                                    </span>
-                                </td>
-                                <td>₱{{ number_format($item['price'], 2) }}</td>
-                                <td>
-                                    <a href="#" class="btn btn-sm btn-outline-dark me-1">Edit</a>
-                                    <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
 
         <!-- RIGHT COLUMN -->
@@ -200,28 +149,6 @@
 
 <!-- Greeting Script -->
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const greetingElement = document.getElementById("greeting");
-    const messageElement = document.getElementById("message");
-    const hour = new Date().getHours();
-    let greeting = "",
-        message = "";
-
-    if (hour >= 5 && hour < 12) {
-        greeting = "Good Morning, Chef 👨‍🍳";
-        message = "Let's prepare delicious Korean dishes today!";
-    } else if (hour >= 12 && hour < 18) {
-        greeting = "Good Afternoon, Team 🌤️";
-        message = "Hope customers are enjoying their meals!";
-    } else {
-        greeting = "Good Evening, Chef 🌙";
-        message = "Great work today, time to wrap up!";
-    }
-
-    greetingElement.textContent = greeting;
-    messageElement.textContent = message;
-});
-
 const ctx = document.getElementById('salesChart').getContext('2d');
 
 new Chart(ctx, {

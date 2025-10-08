@@ -50,9 +50,12 @@
     <div class="container-fluid vh-100 d-flex flex-column">
         <!-- Topbar -->
         <div class="d-flex justify-content-end align-items-center p-3 border-bottom">
-            <a href="" class="text-dark text-decoration-none">
-                Logout <i class="fa-solid fa-right-from-bracket ms-1"></i>
-            </a>
+            <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-link text-dark text-decoration-none p-0">
+                    Logout <i class="fa-solid fa-right-from-bracket ms-1"></i>
+                </button>
+            </form>
         </div>
 
         <!-- Main content -->
@@ -71,7 +74,7 @@
             <!-- Menu Cards -->
             <div class="d-flex justify-content-center gap-4 mt-2">
                 <!-- Employee -->
-                <a href="#" class="text-decoration-none text-dark">
+                <a href="{{route('employee.dashboard')}}" class="text-decoration-none text-dark">
                     <div class="border border_employee border-dark rounded-4 p-4 d-flex flex-column align-items-center justify-content-center shadow-sm"
                         style="width: 180px; height: 180px;">
                         <i class="fa-solid fa-id-badge fa-3x mb-3"></i>
