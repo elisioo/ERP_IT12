@@ -12,6 +12,12 @@
             <i class="fa-solid fa-plus"></i> Add Expense
         </a>
     </div>
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
 
     <div class="row">
         <!-- Left Column -->
@@ -130,7 +136,7 @@
             </div>
 
             <!-- Upcoming Payments -->
-            <div class="card shadow-sm border-0 mb-3" id="upcomingPaymentsCard">
+            <div class="card shadow-sm border-0 mb-3">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <span class="fw-bold">Upcoming Payments</span>
                     <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
@@ -138,12 +144,11 @@
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 </div>
-                <div class="card-body" id="upcomingPaymentsList">
-                    @if($upcomingPaymentsStatus->count())
+                <div class="card-body">
+                    @if($upcomingPaymentsStatus->count() > 0)
                     <ul class="list-group list-group-flush small">
                         @foreach($upcomingPaymentsStatus as $payment)
-                        <li class="list-group-item d-flex justify-content-between align-items-center upcoming-item"
-                            id="payment-{{ $payment->id }}">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
                                 <i class="{{ $payment->icon ?? 'fa-solid fa-calendar' }} me-2 text-primary"></i>
                                 <span class="fw-bold">{{ $payment->title }}</span>
@@ -151,10 +156,8 @@
                                     Due: {{ \Carbon\Carbon::parse($payment->date)->format('M d, Y') }}
                                 </small>
                             </div>
-                            <form action="{{ route('upcoming.markPaid', $payment->id) }}" method="POST"
-                                class="mark-paid-form m-0 p-0">
+                            <form action="{{ route('upcoming.markPaid', $payment->id) }}" method="POST">
                                 @csrf
-                                @method('PUT')
                                 <button type="submit" class="btn btn-sm btn-outline-success">
                                     <i class="fa-solid fa-check"></i>
                                 </button>
@@ -178,29 +181,39 @@
                         <i class="fa-solid fa-clock-rotate-left"></i> View History
                     </button>
                 </div>
+
                 <div id="paymentHistoryCollapse" class="collapse">
-                    <div class="card-body" id="paymentHistoryList">
-                        @if($paidPayments->count())
-                        <ul class="list-group list-group-flush small">
-                            @foreach($paidPayments as $payment)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <i
-                                        class="{{ $payment->icon ?? 'fa-solid fa-calendar-check' }} me-2 text-success"></i>
-                                    <span class="fw-semibold">{{ $payment->title }}</span>
-                                    <small class="text-muted d-block">
-                                        Paid: {{ \Carbon\Carbon::parse($payment->date)->format('M d, Y') }}
-                                    </small>
-                                </div>
-                            </li>
-                            @endforeach
-                        </ul>
-                        @else
-                        <p class="text-muted mb-0">No paid payments yet.</p>
-                        @endif
+                    <div class="card-body p-0">
+                        <div id="paymentHistoryList" class="scrollable-history">
+                            @if(count($paidPayments) > 0)
+                            <ul class="list-group list-group-flush">
+                                @foreach($paidPayments as $payment)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i
+                                            class="{{ $payment->icon ?? 'fa-solid fa-calendar-check' }} text-success me-2"></i>
+                                        <span class="fw-semibold">{{ $payment->title }}</span>
+                                        <small class="text-muted d-block">
+                                            Paid on: {{ \Carbon\Carbon::parse($payment->updated_at)->format('M d, Y') }}
+                                        </small>
+                                    </div>
+                                    <form action="{{ route('upcoming.unmark', $payment->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-warning btn-sm">
+                                            <i class="fa-solid fa-rotate-left"></i> Undo
+                                        </button>
+                                    </form>
+                                </li>
+                                @endforeach
+                            </ul>
+                            @else
+                            <p class="text-muted text-center py-3 mb-0">No payment history yet.</p>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
+
 
 
 
@@ -290,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
-<script>
+<!-- <script>
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.mark-paid-form').forEach(form => {
         form.addEventListener('submit', async (e) => {
@@ -331,12 +344,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-</script>
+</script> -->
 
 <style>
 .fade-out {
     opacity: 0;
     transition: opacity 0.3s ease-out;
+}
+
+.scrollable-history {
+    max-height: 250px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cfcfcf transparent;
+}
+
+.scrollable-history::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollable-history::-webkit-scrollbar-thumb {
+    background-color: #cfcfcf;
+    border-radius: 10px;
 }
 </style>
 

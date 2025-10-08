@@ -9,6 +9,7 @@ use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\UpcomingExpenseController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\CategoryController;
 
 Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
 
@@ -54,6 +55,17 @@ Route::get('/inventory', function () {
 })->name('inventory');
 
 
+Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+Route::post('/categories/{id}/update', [CategoryController::class, 'update'])->name('categories.update');
+Route::post('/categories/{id}/archive', [CategoryController::class, 'archive'])->name('categories.archive');
+
+// Optional archive management
+Route::get('/categories/archived', [CategoryController::class, 'archived'])->name('categories.archived');
+Route::post('/categories/{id}/restore', [CategoryController::class, 'restore'])->name('categories.restore');
+Route::delete('/categories/{id}/destroy', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+
 
 Route::prefix('expenses')->group(function () {
     Route::get('/', [ExpenseController::class, 'index'])->name('expenses.index');
@@ -91,7 +103,7 @@ Route::prefix('orders')->group(function () {
 });
 
 Route::post('/upcoming/store', [UpcomingExpenseController::class, 'store'])->name('upcoming.store');
-Route::put('/upcoming/{id}/mark-paid', [UpcomingExpenseController::class, 'markPaid'])->name('upcoming.markPaid');
+Route::post('/upcoming/{id}/mark-paid', [UpcomingExpenseController::class, 'markPaid'])->name('upcoming.markPaid');
 Route::post('/upcoming/{id}/unmark', [UpcomingExpenseController::class, 'unmark'])->name('upcoming.unmark');
 
 // Route::prefix('inventory')->group(function () {

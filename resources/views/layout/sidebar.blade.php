@@ -40,7 +40,8 @@
         </a>
     </li>
     <li class="{{ ($active ?? '') === 'category' ? 'active' : '' }}">
-        <a href="#" class="nav-link {{ ($active ?? '') === 'category' ? 'active' : 'text-white' }}">
+        <a href="{{ route('categories.index') }}"
+            class="nav-link {{ ($active ?? '') === 'category' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-layer-group me-2  "></i> Category
         </a>
     </li>
