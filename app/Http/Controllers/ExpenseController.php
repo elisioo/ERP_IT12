@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Expense;
-use App\Models\UpcomingPayment;
+use App\Models\UpcomingExpense;
 
 class ExpenseController extends Controller
 {
@@ -20,10 +20,10 @@ class ExpenseController extends Controller
             ['title' => 'Others', 'icon' => 'fa-solid fa-coins'],
         ];
 
-        // ✅ Expenses
+        //  Expenses
         $expenses = Expense::orderBy('date', 'desc')->get();
 
-        // ✅ Total for this month
+        //  Total for this month
         $totalThisMonth = Expense::whereMonth('date', now()->month)
             ->sum('amount');
 
@@ -32,12 +32,12 @@ class ExpenseController extends Controller
             ->groupBy('category')
             ->pluck('total', 'category');
 
-        // ✅ Upcoming & Paid Payments (from DB)
-        $upcomingPaymentsStatus = UpcomingPayment::where('status', 'pending')
+        //  Upcoming & Paid Payments (from DB)
+        $upcomingPaymentsStatus = UpcomingExpense::where('status', 'pending')
             ->orderBy('date', 'asc')
             ->get();
 
-        $paidPayments = UpcomingPayment::where('status', 'paid')
+        $paidPayments = UpcomingExpense::where('status', 'paid')
             ->orderByDesc('date')
             ->get();
 

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\UpcomingPayment;
+use App\Models\UpcomingExpense;
 
 class UpcomingExpenseController extends Controller
 {
@@ -15,7 +15,7 @@ class UpcomingExpenseController extends Controller
             'icon' => 'nullable|string|max:255',
         ]);
 
-        UpcomingPayment::create([
+        UpcomingExpense::create([
             'title' => $request->title,
             'icon' => $request->icon ?: 'fa-solid fa-calendar',
             'date' => $request->date,
@@ -27,7 +27,7 @@ class UpcomingExpenseController extends Controller
 
     public function markPaid($id)
     {
-        $payment = UpcomingPayment::findOrFail($id);
+        $payment = UpcomingExpense::findOrFail($id);
         $payment->status = 'paid';
         $payment->save();
 
@@ -36,7 +36,7 @@ class UpcomingExpenseController extends Controller
 
     public function unmark($id)
     {
-        $payment = UpcomingPayment::findOrFail($id);
+        $payment = UpcomingExpense::findOrFail($id);
         $payment->status = 'pending';
         $payment->save();
 
