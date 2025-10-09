@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
-    //  Show all categories
+    //  Show all active (non-archived) categories
     public function index()
     {
-        $categories = Category::with('menus')->get();
+        $categories = Category::with('menus')->whereNull('deleted_at')->get();
         return view('inventory.category', compact('categories'), ['page' => 'category']);
     }
 
@@ -63,16 +63,39 @@ class CategoryController extends Controller
     }
 
    
-    public function destroy($id)
+    public function archive($id)
     {
         $category = Category::findOrFail($id);
+        $category->delete(); // Soft delete
+        return back()->with('success', 'Category moved to archive!');
+    }
+
+   
+    public function archived()
+    {
+        $categories = Category::onlyTrashed()->get();
+        return view('inventory.category_archive', compact('categories'), ['page' => 'category']);
+    }
+
+   
+    public function restore($id)
+    {
+        $category = Category::onlyTrashed()->findOrFail($id);
+        $category->restore();
+        return back()->with('success', 'Category restored successfully!');
+    }
+
+  
+    public function destroy($id)
+    {
+        $category = Category::onlyTrashed()->findOrFail($id);
 
         if ($category->image) {
             Storage::disk('public')->delete($category->image);
         }
 
-        $category->delete();
+        $category->forceDelete();
 
-        return back()->with('success', 'Category deleted successfully!');
+        return back()->with('success', 'Category permanently deleted!');
     }
 }

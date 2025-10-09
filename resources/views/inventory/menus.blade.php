@@ -91,14 +91,14 @@
                             <h6 class="fw-bold mb-1">{{ $menu->menu_name }}</h6>
                             <small
                                 class="text-muted d-block">{{ $menu->category?->category_name ?? 'Uncategorized' }}</small>
-                            <div class="mb-2 text-warning">
+                            <!-- <div class="mb-2 text-warning">
                                 @for($i=1; $i<=5; $i++) @if($i <=floor($menu->rating)) ★
                                     @elseif($i == ceil($menu->rating) && $menu->rating != floor($menu->rating)) ☆
                                     @else ☆
                                     @endif
                                     @endfor
                                     ({{ number_format($menu->rating,1) }})
-                            </div>
+                            </div> -->
                             <h6 class="fw-bold text-primary mb-2">₱{{ number_format($menu->price, 2) }}</h6>
 
                             <!-- Action Buttons -->

@@ -10,6 +10,8 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\UpcomingExpenseController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ItemController;
+use App\Http\Controllers\InventoryDashboardController;
 
 Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
 
@@ -25,10 +27,7 @@ Route::middleware('admin.auth')->group(function () {
         return view('menu');
     })->name('menu');
 
-Route::get('/dashboard', function () {
-    return view('inventory.dashboard', ['page' => 'dashboard']);
-})->name('dashboard');
-
+Route::get('/dashboard', [InventoryDashboardController::class, 'index'])->name('dashboard.index');
 
 Route::get('/orders', function () {
     return view('inventory.order', ['page' => 'orders']);
@@ -50,10 +49,13 @@ Route::get('/orders', function () {
 //     return view('inventory.addExpenses', ['page' => 'expenses']);
 // })->name('expenses.add');
 
-Route::get('/inventory', function () {
-    return view('inventory.inventory', ['page' => 'inventory']);
-})->name('inventory');
-
+Route::controller(ItemController::class)->group(function () {
+    Route::get('/inventory', 'index')->name('inventory.index');
+    Route::post('/inventory/store', 'store')->name('inventory.store');
+    Route::post('/inventory/archive/{id}', 'archive')->name('inventory.archive');
+    Route::post('/inventory/restore/{id}', 'restore')->name('inventory.restore'); 
+    Route::delete('/inventory/delete/{id}', 'destroy')->name('inventory.destroy');
+});
 
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
@@ -89,7 +91,11 @@ Route::prefix('menus')->group(function () {
 
 
 
+
+
 Route::prefix('orders')->group(function () {
+
+    // Main Order Routes
     Route::get('/', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('/store', [OrderController::class, 'store'])->name('orders.store');
@@ -99,8 +105,15 @@ Route::prefix('orders')->group(function () {
     Route::put('/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::delete('/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
 
+    // Bulk archive (soft delete)
     Route::delete('/bulk-delete', [OrderController::class, 'bulkDelete'])->name('orders.bulkDelete');
+
+    // 🗂️ Archive-related routes
+    Route::get('/archive', [OrderController::class, 'archived'])->name('orders.archived'); // View archived orders
+    Route::patch('/{order}/restore', [OrderController::class, 'restore'])->name('orders.restore'); // Restore single order
+    Route::patch('/{order}/update-archive-date', [OrderController::class, 'updateArchiveDate'])->name('orders.updateArchiveDate'); // Manually update archive date
 });
+
 
 Route::post('/upcoming/store', [UpcomingExpenseController::class, 'store'])->name('upcoming.store');
 Route::post('/upcoming/{id}/mark-paid', [UpcomingExpenseController::class, 'markPaid'])->name('upcoming.markPaid');

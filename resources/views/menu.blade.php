@@ -13,85 +13,89 @@
     <link rel="icon" href="{{ asset('img/kdr.png') }}" type="image/x-icon">
 
     <!-- Google Font (Korean Diner Style) -->
-    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;700&display=swap"
+        rel="stylesheet">
 
     <style>
-        /* 🌄 Background Image */
-        body {
-            background: url('{{ asset("img/menu_bg.png") }}') no-repeat center center fixed;
-            background-size: cover;
-            min-height: 100vh; 
-            font-family: 'Do Hyeon', 'Noto Sans KR', sans-serif;
-        }
+    /* 🌄 Background Image */
+    body {
+        background: url('{{ asset("img/menu_bg.png") }}') no-repeat center center fixed;
+        background-size: cover;
+        min-height: 100vh;
+        font-family: 'Do Hyeon', 'Noto Sans KR', sans-serif;
+    }
 
-        /* Overlay */
-        .overlay {
-            background-color: rgba(0, 0, 0, 0.404);
-            min-height: 100vh;
-        }
+    /* Overlay */
+    .overlay {
+        background-color: rgba(0, 0, 0, 0.404);
+        min-height: 100vh;
+    }
 
-        /* White text default */
-        h1,
-        h5,
-        p,
-        a,
-        button {
-            color: #f0f0f0 !important;
-        }
+    /* White text default */
+    h1,
+    h5,
+    p,
+    a,
+    button {
+        color: #f0f0f0 !important;
+    }
 
-        /* Logout button */
-        .btn-link {
-            color: #f0f0f0 !important;
-        }
+    /* Logout button */
+    .btn-link {
+        color: #f0f0f0 !important;
+    }
 
-        .btn-link:hover {
-            color: #f8d7da !important;
-        }
+    .btn-link:hover {
+        color: #f8d7da !important;
+    }
 
-        /* Logo shadow */
-        img.logo {
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
-        }
+    /* Logo shadow */
+    img.logo {
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+    }
 
-        /* Card Style */
-        .menu-card {
-            width: 220px;
-            border: 2px solid #fff;
-            border-radius: 1rem;
-            overflow: hidden;
-            color: #202020;
-            background-color: rgb(235, 230, 230);
-             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-            cursor: pointer;
-        }
+    /* Card Style */
+    .menu-card {
+        width: 220px;
+        border: 2px solid #fff;
+        border-radius: 1rem;
+        overflow: hidden;
+        color: #202020;
+        background-color: rgb(235, 230, 230);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        cursor: pointer;
+    }
 
-        .menu-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-            background-color: #fff;
-        }
+    .menu-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        background-color: #fff;
+    }
 
-        .menu-card:hover h5,
-        .menu-card:hover i {
-            color: #000 !important;
-        }
+    .menu-card:hover h5,
+    .menu-card:hover i {
+        color: #000 !important;
+    }
 
-        .menu-card img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-        }
+    .menu-card img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
 
-        .menu-card-body {
-            padding: 1rem;
-        }
-        .custom-text-shadow {
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* horizontal-offset vertical-offset blur-radius color */
-        }
-        .menu-card-body i {
-            margin-bottom: 8px;
-        }
+    .menu-card-body {
+        padding: 1rem;
+    }
+
+    .custom-text-shadow {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        /* horizontal-offset vertical-offset blur-radius color */
+    }
+
+    .menu-card-body i {
+        margin-bottom: 8px;
+    }
     </style>
 </head>
 
@@ -128,19 +132,19 @@
                             <img src="{{ asset('img/crew.jpg') }}" alt="Employee Photo">
                             <div class="menu-card-body text-center d-flex flex-column align-items-center">
                                 <div class="row">
-                                <div class="col">
-                                {{-- <i class="fa-solid fa-id-badge fa-2x text-dark"></i> --}}
-                                {{-- </div>
+                                    <div class="col">
+                                        {{-- <i class="fa-solid fa-id-badge fa-2x text-dark"></i> --}}
+                                        {{-- </div>
                                   <div class="col"> --}}
-                                <h5 class="mt-2 text-dark">Employee</h5>
-                                  </div>
+                                        <h5 class="mt-2 text-dark">Employee</h5>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </a>
 
                     <!-- Inventory Card -->
-                    <a href="{{ route('dashboard') }}" class="text-decoration-none">
+                    <a href="{{ route('dashboard.index') }}" class="text-decoration-none">
                         <div class="menu-card">
                             <img src="{{ asset('img/korean_food.jpg') }}" alt="Korean Food Photo">
                             <div class="menu-card-body text-center">

@@ -1,5 +1,5 @@
 <!-- Sidebar -->
-<a href="{{ route('dashboard') }}"
+<a href="{{ route('dashboard.index') }}"
     class="d-flex align-items-center mb-3 mb-md-0 me-md-auto ps-2 text-white text-decoration-none">
     <div class="d-flex align-items-center">
         <img src="{{ asset('img/kdr.png') }}" alt="Korean Diner Logo" style="width: 40px; height: 40px;" class="me-3">
@@ -14,7 +14,7 @@
 
 <ul class="nav nav-pills flex-column mb-auto">
     <li class="{{ ($active ?? '') === 'dashboard' ? 'active' : '' }}">
-        <a href="{{ route('dashboard') }}"
+        <a href="{{ route('dashboard.index') }}"
             class="nav-link {{ ($active ?? '') === 'dashboard' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-chart-line me-2"></i> Dashboard
         </a>
@@ -46,7 +46,7 @@
         </a>
     </li>
     <li class="{{ ($active ?? '') === 'inventory' ? 'active' : '' }}">
-        <a href="{{ route('inventory') }}"
+        <a href="{{ route('inventory.index') }}"
             class="nav-link {{ ($active ?? '') === 'inventory' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-box-open me-2"></i> Inventory
         </a>
@@ -67,8 +67,8 @@
         <strong>Admin</strong>
     </a>
     <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-        <li><a class="dropdown-item" href="#">Settings</a></li>
-        <li><a class="dropdown-item" href="#">Profile</a></li>
+        <!-- <li><a class="dropdown-item" href="#">Settings</a></li>
+        <li><a class="dropdown-item" href="#">Profile</a></li> -->
 
         <li><a class="dropdown-item" href="/">Return</a></li>
         <li><a class="dropdown-item" href="{{ route('employee.dashboard') }}">Manage Employee</a></li>
