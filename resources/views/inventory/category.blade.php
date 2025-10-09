@@ -19,7 +19,17 @@
         </div>
     </div>
 
-
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>There were some problems with your input:</strong>
+            <ul class="mb-0 mt-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
     @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ session('success') }}
@@ -128,10 +138,19 @@
                         <div class="list-group">
                             @foreach($category->menus as $item)
                             <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <img 
+                                        src="{{ $item->image ? asset('storage/' . $item->image) : 'https://via.placeholder.com/40x40?text=🍽️' }}" 
+                                        alt="{{ $item->menu_name }}" 
+                                        class="rounded-circle me-3"
+                                        style="width: 40px; height: 40px; object-fit: cover;"
+                                    >
+                               
                                 <div>
-                                    <h6 class="mb-1">{{ $item->name }}</h6>
-                                    <small class="text-muted">{{ $item->description ?? 'No description' }}</small>
+                                    <h6 class="mb-1">{{ $item->menu_name }}</h6>
+                                        <small class="text-muted">{{ $item->description ?? 'No description' }}</small>
                                 </div>
+                                 </div>
                                 <span class="badge bg-primary">₱{{ number_format($item->price, 2) }}</span>
                             </div>
                             @endforeach

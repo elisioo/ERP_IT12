@@ -17,34 +17,39 @@
     <div class="row mb-4">
         <div class="col-md-4 mb-3">
             <div class="card shadow-sm border-0">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-muted mb-1">Total Items</h6>
+                <div class="card-body d-flex align-items-center ">
+                
+                      <i class="fa-solid fa-boxes fa-2x text-primary me-3"></i>
+                     
+                    <div >
+                        <h6 class="text-muted mb-2">Total Items</h6>
                         <h4 class="fw-bold">120</h4>
                     </div>
-                    <i class="fa-solid fa-boxes fa-2x text-primary"></i>
+                  
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-3">
             <div class="card shadow-sm border-0">
-                <div class="card-body d-flex justify-content-between align-items-center">
+                <div class="card-body d-flex align-items-center">
+                          <i class="fa-solid fa-exclamation-triangle fa-2x text-warning me-3"></i>
                     <div>
-                        <h6 class="text-muted mb-1">Low Stock</h6>
+                        <h6 class="text-muted mb-2">Low Stock</h6>
                         <h4 class="fw-bold text-warning">15</h4>
                     </div>
-                    <i class="fa-solid fa-exclamation-triangle fa-2x text-warning"></i>
+              
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-3">
             <div class="card shadow-sm border-0">
-                <div class="card-body d-flex justify-content-between align-items-center">
+                <div class="card-body d-flex align-items-center">
+                    <i class="fa-solid fa-box-open fa-2x text-danger me-3"></i>
                     <div>
-                        <h6 class="text-muted mb-1">Out of Stock</h6>
+                        <h6 class="text-muted mb-2">Out of Stock</h6>
                         <h4 class="fw-bold text-danger">3</h4>
                     </div>
-                    <i class="fa-solid fa-box-open fa-2x text-danger"></i>
+                 
                 </div>
             </div>
         </div>
