@@ -127,6 +127,8 @@ Route::get('/employee/attendance', [AttendanceController::class, 'attendance'])-
 Route::get('/employee/payroll', [PayrollController::class, 'index'])->name('employee.payroll');
 Route::post('/payroll/generate', [PayrollController::class, 'generate'])->name('payroll.generate');
 Route::post('/payroll/{id}/mark-paid', [PayrollController::class, 'markPaid'])->name('payroll.markPaid');
+Route::post('/payroll/bulk-pay', [PayrollController::class, 'bulkPay'])->name('payroll.bulkPay');
+Route::post('/payroll/auto-generate', [PayrollController::class, 'autoGenerate'])->name('payroll.autoGenerate');
 Route::put('/employee/{id}/rate', [PayrollController::class, 'updateRate'])->name('employee.updateRate');
 
 Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');

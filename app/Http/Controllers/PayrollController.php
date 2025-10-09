@@ -48,30 +48,46 @@ class PayrollController extends Controller
     public function generate(Request $request)
     {
         $month = $request->input('month', now()->format('Y-m'));
+        $autoPay = $request->boolean('auto_pay', false);
 
-        $employees = Employee::with(['attendances' => function($q) use ($month) {
+        $employees = Employee::active()->with(['attendances' => function($q) use ($month) {
             $q->whereYear('date', Carbon::parse($month)->year)
               ->whereMonth('date', Carbon::parse($month)->month);
         }])->get();
+
+        $generated = 0;
+        $updated = 0;
 
         foreach ($employees as $employee) {
             $totalHours = $this->calculateTotalHours($employee->attendances);
             $hourlyRate = $employee->hourly_rate ?? 100;
             $grossPay = $totalHours * $hourlyRate;
 
-            Payroll::updateOrCreate(
+            $payroll = Payroll::updateOrCreate(
                 ['employee_id' => $employee->id, 'period' => $month],
                 [
                     'total_hours' => $totalHours,
                     'hourly_rate' => $hourlyRate,
                     'gross_pay' => $grossPay,
-                    'status' => 'pending'
+                    'status' => $autoPay ? 'paid' : 'pending',
+                    'pay_date' => $autoPay ? now() : null
                 ]
             );
+
+            if ($payroll->wasRecentlyCreated) {
+                $generated++;
+            } else {
+                $updated++;
+            }
+        }
+
+        $message = "Payroll generated! Created: {$generated}, Updated: {$updated}";
+        if ($autoPay) {
+            $message .= " (Auto-paid)";
         }
 
         return redirect()->route('employee.payroll', ['month' => $month])
-                        ->with('success', 'Payroll generated successfully!');
+                        ->with('success', $message);
     }
 
     public function markPaid($id)
@@ -80,6 +96,32 @@ class PayrollController extends Controller
         $payroll->update(['status' => 'paid', 'pay_date' => now()]);
 
         return redirect()->back()->with('success', 'Payroll marked as paid!');
+    }
+
+    public function bulkPay(Request $request)
+    {
+        $payrollIds = $request->input('payroll_ids', []);
+        
+        if (empty($payrollIds)) {
+            return redirect()->back()->with('error', 'No payroll records selected.');
+        }
+
+        $updated = Payroll::whereIn('id', $payrollIds)
+                         ->where('status', 'pending')
+                         ->update([
+                             'status' => 'paid',
+                             'pay_date' => now()
+                         ]);
+
+        return redirect()->back()->with('success', "Marked {$updated} payroll records as paid!");
+    }
+
+    public function autoGenerate()
+    {
+        \Artisan::call('payroll:generate');
+        $output = \Artisan::output();
+        
+        return redirect()->back()->with('success', 'Auto-generation completed! ' . strip_tags($output));
     }
 
     public function updateRate(Request $request, $id)
