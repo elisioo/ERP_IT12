@@ -13,7 +13,34 @@ class ReportController extends Controller
 {
     public function index()
     {
-        return view('employee.reports');
+        // Employee Analytics
+        $totalEmployees = Employee::active()->count();
+        $totalAttendanceToday = Attendance::whereDate('date', today())->count();
+        
+        // Weekly Attendance Trend
+        $weeklyAttendance = Attendance::selectRaw('DATE(date) as date, COUNT(*) as count')
+            ->where('date', '>=', now()->subDays(7))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Employee Status Distribution
+        $employeeStatus = [
+            ['status' => 'Active', 'count' => Employee::active()->count()],
+            ['status' => 'Archived', 'count' => Employee::archived()->count()]
+        ];
+
+        // Monthly Payroll Summary
+        $monthlyPayroll = Payroll::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(gross_pay) as total')
+            ->where('created_at', '>=', now()->subMonths(6))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        return view('employee.reports', compact(
+            'totalEmployees', 'totalAttendanceToday', 'weeklyAttendance', 
+            'employeeStatus', 'monthlyPayroll'
+        ));
     }
 
     public function attendance(Request $request)
