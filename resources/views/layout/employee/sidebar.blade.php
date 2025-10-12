@@ -58,7 +58,7 @@
     <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal">Settings</a></li>
         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">Profile</a></li>
-        <li><a class="dropdown-item" href="{{ route('inventory') }}">Manage Inventory</a></li>
+        <li><a class="dropdown-item" href="{{ route('dashboard.index') }}">Manage Inventory</a></li>
         <li>
             <hr class="dropdown-divider">
         </li>
