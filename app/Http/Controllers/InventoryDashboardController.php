@@ -52,30 +52,50 @@ class InventoryDashboardController extends Controller
             ]);
         }   
 
-    private function getStockStatus()
+   private function getStockStatus()
     {
-        $threshold = 10;
+        // Define what "full" stock means
+        $fullStockLevel = 100; // Adjust if your normal full stock is not 100
 
-        // Count all inventory items below and above threshold
-        $totalLowStock = Inventory::where('quantity', '<', $threshold)->count();
-        $restockedLowStock = Inventory::where('quantity', '>=', $threshold)->count();
+        // Get all inventory items
+        $inventories = Inventory::all();
 
-        $totalItems = $totalLowStock + $restockedLowStock;
-
-        if ($totalItems === 0) {
+        if ($inventories->isEmpty()) {
             return [
-                'percentage' => 100,
-                'text' => 'No inventory data available',
+                'percentage' => 0,
+                'text' => 'No inventory items available',
             ];
         }
 
-        $percentage = round(($restockedLowStock / $totalItems) * 100, 0);
+        // Compute total possible stock (max capacity)
+        $totalCapacity = $inventories->count() * $fullStockLevel;
+
+        // Compute total current quantity
+        $totalCurrentStock = $inventories->sum('quantity');
+
+        // Calculate percentage of stock filled
+        $percentage = round(($totalCurrentStock / $totalCapacity) * 100, 0);
+
+        // Make sure it stays between 0 and 100
+        $percentage = max(0, min(100, $percentage));
+
+        // Dynamic text message
+        if ($percentage >= 90) {
+            $text = 'Stock levels are healthy';
+        } elseif ($percentage >= 50) {
+            $text = 'Stock levels are moderate';
+        } elseif ($percentage > 0) {
+            $text = 'Low stock levels detected';
+        } else {
+            $text = 'No stock available';
+        }
 
         return [
             'percentage' => $percentage,
-            'text' => "{$percentage}% of low-stock items restocked",
+            'text' => $text,
         ];
     }
+
 
 /**
  * Generate alert for low-stock inventory
