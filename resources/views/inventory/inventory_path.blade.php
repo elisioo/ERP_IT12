@@ -146,7 +146,7 @@
                         <th>Quantity</th>
                         <th>Unit</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -163,7 +163,7 @@
                                 {{ $item->quantity == 0 ? 'Out of Stock' : ($item->quantity < 10 ? 'Low Stock' : 'In Stock') }}
                             </span>
                         </td>
-                        <td>
+                        <td class="text-center">
                             <!-- Edit button -->
                             <button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="modal"
                                 data-bs-target="#editModal" data-id="{{ $item->id }}"
@@ -175,12 +175,12 @@
 
 
                             <!-- Archive button -->
-                            <form action="{{ route('inventory.archive', $item->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-warning">
-                                    <i class="fa-solid fa-box-archive"></i> Archive
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
+                                data-bs-target="#confirmArchiveModal" data-id="{{ $item->id }}"
+                                data-name="{{ $item->menu->menu_name ?? 'Unnamed' }}">
+                                <i class="fa-solid fa-box-archive"></i> Archive
+                            </button>
+
                         </td>
                     </tr>
                     @empty
@@ -197,6 +197,34 @@
             </div>
         </div>
     </div>
+    <!-- Confirm Archive Modal -->
+    <div class="modal fade" id="confirmArchiveModal" tabindex="-1" aria-labelledby="confirmArchiveLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="archiveForm" method="POST">
+                @csrf
+                <div class="modal-content">
+                    <div class="modal-header text-dark">
+                        <h5 class="modal-title" id="confirmArchiveLabel">
+                            <i class="fa-solid fa-box-archive me-2"></i> Confirm Archive
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">
+                            Are you sure you want to archive
+                            <strong id="archiveItemName">this item</strong>?
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-outline-warning">Yes, Archive</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Edit Item Modal -->
     <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md">
@@ -461,7 +489,24 @@
 
         });
     });
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmArchiveModal = document.getElementById('confirmArchiveModal');
+        confirmArchiveModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const itemId = button.getAttribute('data-id');
+            const itemName = button.getAttribute('data-name');
+
+            // Set item name in modal
+            document.getElementById('archiveItemName').textContent = itemName;
+
+            // Update form action dynamically
+            const form = document.getElementById('archiveForm');
+            form.action = `/inventory/${itemId}/archive`;
+        });
+    });
     </script>
+
+
 
 
 
