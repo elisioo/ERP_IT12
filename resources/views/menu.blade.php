@@ -167,26 +167,30 @@
                     <h5 class="modal-title text-white">Terms and Conditions</h5>
                 </div>
                 <div class="modal-body">
-                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #555; padding: 15px; margin-bottom: 20px; background-color: #2d2d2d;">
+                    <div
+                        style="max-height: 300px; overflow-y: auto; border: 1px solid #555; padding: 15px; margin-bottom: 20px; background-color: #2d2d2d;">
                         <h6 class="text-warning">ERP System Terms and Conditions</h6>
                         <p>By accessing and using this ERP system, you agree to the following terms:</p>
-                        
+
                         <h6 class="text-info">1. Data Security</h6>
-                        <p>You are responsible for maintaining the confidentiality of your login credentials and all activities under your account.</p>
-                        
+                        <p>You are responsible for maintaining the confidentiality of your login credentials and all
+                            activities under your account.</p>
+
                         <h6 class="text-info">2. System Usage</h6>
                         <p>This system is for authorized personnel only. Unauthorized access is prohibited.</p>
-                        
+
                         <h6 class="text-info">3. Data Privacy</h6>
-                        <p>All data entered into the system must comply with applicable privacy laws and company policies.</p>
-                        
+                        <p>All data entered into the system must comply with applicable privacy laws and company
+                            policies.</p>
+
                         <h6 class="text-info">4. System Availability</h6>
-                        <p>While we strive for 100% uptime, the system may be unavailable during maintenance periods.</p>
-                        
+                        <p>While we strive for 100% uptime, the system may be unavailable during maintenance periods.
+                        </p>
+
                         <h6 class="text-info">5. User Responsibilities</h6>
                         <p>Users must ensure data accuracy and report any security incidents immediately.</p>
                     </div>
-                    
+
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="acceptTerms" required>
                         <label class="form-check-label text-white" for="acceptTerms">
@@ -203,23 +207,23 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            @if(!session('terms_accepted'))
-                const termsModal = new bootstrap.Modal(document.getElementById('termsModal'));
-                termsModal.show();
-            @endif
-            
-            const checkbox = document.getElementById('acceptTerms');
-            const acceptBtn = document.getElementById('acceptBtn');
-            
-            checkbox.addEventListener('change', function() {
-                acceptBtn.disabled = !this.checked;
-            });
-            
-            acceptBtn.addEventListener('click', function() {
-                fetch('{{ route("terms.accept") }}', {
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(!session('terms_accepted'))
+        const termsModal = new bootstrap.Modal(document.getElementById('termsModal'));
+        termsModal.show();
+        @endif
+
+        const checkbox = document.getElementById('acceptTerms');
+        const acceptBtn = document.getElementById('acceptBtn');
+
+        checkbox.addEventListener('change', function() {
+            acceptBtn.disabled = !this.checked;
+        });
+
+        acceptBtn.addEventListener('click', function() {
+            fetch('{{ route("terms.accept") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -232,9 +236,10 @@
                         bootstrap.Modal.getInstance(document.getElementById('termsModal')).hide();
                     }
                 });
-            });
         });
+    });
     </script>
+
 </body>
 
 </html>

@@ -19,7 +19,7 @@ Route::get('/login', [\App\Http\Controllers\AuthController::class, 'showLogin'])
 Route::post('/login', [\App\Http\Controllers\AuthController::class, 'login'])->name('login.post');
 Route::get('/register', [\App\Http\Controllers\AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [\App\Http\Controllers\AuthController::class, 'register'])->name('register.post');
-Route::post('/terms/accept', [\App\Http\Controllers\AuthController::class, 'acceptTerms'])->name('terms.accept');
+
 Route::post('/logout', [\App\Http\Controllers\AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('admin.auth')->group(function () {
@@ -27,38 +27,14 @@ Route::middleware('admin.auth')->group(function () {
     Route::get('/', function () {
         return view('menu');
     })->name('menu');
+    
+Route::post('/terms/accept', [\App\Http\Controllers\AuthController::class, 'acceptTerms'])->name('terms.accept');
 
 Route::get('/dashboard', [InventoryDashboardController::class, 'index'])->name('dashboard.index');
 
 Route::get('/orders', function () {
     return view('inventory.order', ['page' => 'orders']);
 })->name('orders');
-
-// Route::get('/menus', function () {
-//     return view('inventory.menus', ['page' => 'menus']);
-// })->name('menus');
-
-// Route::get('/menus/add', function () {
-//     return view('inventory.addMenu', ['page' => 'menus']);
-// })->name('menus.add');
-
-// Route::get('/expenses', function () {
-//     return view('inventory.expenses', ['page' => 'expenses']);
-// })->name('expenses');
-
-// Route::get('/expenses/add', function () {
-//     return view('inventory.addExpenses', ['page' => 'expenses']);
-// })->name('expenses.add');
-
-
-// Route::controller(ItemController::class)->group(function () {
-//     Route::get('/inventory', 'index')->name('inventory.index');
-//     Route::post('/inventory/store', 'store')->name('inventory.store');
-//     Route::post('/inventory/archive/{id}', 'archive')->name('inventory.archive');
-//     Route::post('/inventory/restore/{id}', 'restore')->name('inventory.restore'); 
-//     Route::delete('/inventory/delete/{id}', 'destroy')->name('inventory.destroy');
-// });
-
 
 Route::prefix('inventory')->name('inventory.')->group(function () {
     Route::get('/', [InventoryController::class, 'index'])->name('index');
@@ -136,20 +112,7 @@ Route::post('/upcoming/store', [UpcomingExpenseController::class, 'store'])->nam
 Route::post('/upcoming/{id}/mark-paid', [UpcomingExpenseController::class, 'markPaid'])->name('upcoming.markPaid');
 Route::post('/upcoming/{id}/unmark', [UpcomingExpenseController::class, 'unmark'])->name('upcoming.unmark');
 
-// Route::prefix('inventory')->group(function () {
-//     Route::get('/', function () {
-//         return view('inventory.dashboard');
-//     })->name('inventory.dashboard');
-//     Route::get('/add', function () {
-//         return view('inventory.add');
-//     })->name('inventory.add');
-//     Route::get('/update', function () {
-//         return view('inventory.update');
-//     })->name('inventory.update');
-//     Route::get('/view', function () {
-//         return view('inventory.view');
-//     })->name('inventory.view');
-// });
+
 
 Route::get('/employee/dashboard', [EmployeeController::class, 'dashboard'])->name('employee.dashboard');
 Route::get('/employee/attendance', [AttendanceController::class, 'attendance'])->name('employee.attendance');

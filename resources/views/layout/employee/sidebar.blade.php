@@ -40,8 +40,7 @@
     </li>
 
     <li class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">
-        <a href="{{ route('reports.index') }}"
-            class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+        <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
             <i class="fa-solid fa-chart-bar me-2"></i> Reports
         </a>
     </li>

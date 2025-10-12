@@ -60,16 +60,16 @@
 <!-- Dropdown at bottom -->
 <div class="dropdown mt-auto">
     <hr class="text-white">
-    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1"
+    <a href="#" class="d-flex align-items-center text-light text-decoration-none dropdown-toggle" id="dropdownUser1"
         data-bs-toggle="dropdown" aria-expanded="false">
-        <img src="https://i.pinimg.com/originals/45/de/42/45de424a29a8000a65787ec74440799c.png" alt="" width="32"
-            height="32" class="rounded-circle me-2">
-        <strong>Admin</strong>
+        <img src="{{ session('admin_profile_picture') ? asset('storage/' . session('admin_profile_picture')) : 'https://i.pinimg.com/originals/45/de/42/45de424a29a8000a65787ec74440799c.png' }}"
+            alt="" width="32" height="32" class="rounded-circle me-2" style="object-fit: cover;">
+        <strong>{{ session('admin_username', 'Admin') }}</strong>
     </a>
     <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
         <!-- <li><a class="dropdown-item" href="#">Settings</a></li>
         <li><a class="dropdown-item" href="#">Profile</a></li> -->
-
+        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">Profile</a></li>
         <li><a class="dropdown-item" href="/">Return</a></li>
         <li><a class="dropdown-item" href="{{ route('employee.dashboard') }}">Manage Employee</a></li>
         <li>
