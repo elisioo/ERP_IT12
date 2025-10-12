@@ -105,7 +105,7 @@ class EmployeeController extends Controller
         return view('employee.dashboard', array_merge(
             $dashboardData,
             $monthlyData,
-            ['recentActivities' => $recentActivities, 'notice' => $notice]
+            ['recentActivities' => $recentActivities, 'notice' => $notice, 'allEmployees' => $employees]
         ));
     }
 

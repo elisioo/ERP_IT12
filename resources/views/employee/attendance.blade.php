@@ -55,7 +55,7 @@
                             @php
                                 $attendance = $employee->attendances->first();
                             @endphp
-                            <tr data-name="{{ strtolower($employee->first_name . ' ' . $employee->last_name) }}">
+                            <tr data-name="{{ strtolower($employee->first_name . ' ' . $employee->last_name) }}" @if(!$attendance || !$attendance->time_in) class="border-danger" style="border-left: 4px solid #dc3545;" @endif>
                                 <td>{{ $employee->first_name }} {{ $employee->last_name }}</td>
                                 <td>
                                     <div class="time-info">

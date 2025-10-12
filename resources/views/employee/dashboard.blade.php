@@ -26,7 +26,7 @@
 
         <div class="row mb-5">
             <div class="col-md-3 mb-4">
-                <div class="stats-card text-white bg-primary">
+                <div class="stats-card text-white bg-primary" style="cursor: pointer; transition: transform 0.2s;" data-bs-toggle="modal" data-bs-target="#employeeListModal" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h6 class="mb-1 opacity-75">Total Employees</h6>
@@ -39,17 +39,19 @@
                 </div>
             </div>
             <div class="col-md-3 mb-4">
-                <div class="stats-card text-white bg-danger">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Absent Today</h6>
-                            <h2 class="stat-number mb-0">{{ $absentCount }}</h2>
-                        </div>
-                        <div class="text-end">
-                            <i class="fa-solid fa-user-xmark fa-3x opacity-50"></i>
+                <a href="{{ route('attendance.index') }}" class="text-decoration-none">
+                    <div class="stats-card text-white bg-danger" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-1 opacity-75">Absent Today</h6>
+                                <h2 class="stat-number mb-0">{{ $absentCount }}</h2>
+                            </div>
+                            <div class="text-end">
+                                <i class="fa-solid fa-user-xmark fa-3x opacity-50"></i>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-md-3 mb-4">
                 <div class="stats-card text-white bg-info">
@@ -152,6 +154,8 @@
         </div>
     </div>
 </div>
+
+@include('employee.modals.employee_list')
 
 @endsection
 @vite('resources/js/dashboard.js')

@@ -19,6 +19,7 @@ Route::get('/login', [\App\Http\Controllers\AuthController::class, 'showLogin'])
 Route::post('/login', [\App\Http\Controllers\AuthController::class, 'login'])->name('login.post');
 Route::get('/register', [\App\Http\Controllers\AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [\App\Http\Controllers\AuthController::class, 'register'])->name('register.post');
+Route::post('/terms/accept', [\App\Http\Controllers\AuthController::class, 'acceptTerms'])->name('terms.accept');
 Route::post('/logout', [\App\Http\Controllers\AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('admin.auth')->group(function () {
@@ -155,6 +156,8 @@ Route::get('/employee/attendance', [AttendanceController::class, 'attendance'])-
 Route::get('/employee/payroll', [PayrollController::class, 'index'])->name('employee.payroll');
 Route::post('/payroll/generate', [PayrollController::class, 'generate'])->name('payroll.generate');
 Route::post('/payroll/{id}/mark-paid', [PayrollController::class, 'markPaid'])->name('payroll.markPaid');
+Route::post('/payroll/bulk-pay', [PayrollController::class, 'bulkPay'])->name('payroll.bulkPay');
+Route::post('/payroll/auto-generate', [PayrollController::class, 'autoGenerate'])->name('payroll.autoGenerate');
 Route::put('/employee/{id}/rate', [PayrollController::class, 'updateRate'])->name('employee.updateRate');
 
 Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');

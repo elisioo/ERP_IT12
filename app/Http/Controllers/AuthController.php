@@ -50,7 +50,8 @@ class AuthController extends Controller
                 'admin_logged_in' => true, 
                 'admin_id' => $admin->id, 
                 'admin_username' => $admin->username,
-                'admin_profile_picture' => $admin->profile_picture
+                'admin_profile_picture' => $admin->profile_picture,
+                'terms_accepted' => (bool) $admin->terms_accepted_at
             ]);
             return redirect()->route('menu');
         }
@@ -91,6 +92,20 @@ class AuthController extends Controller
             'admin_profile_picture' => $admin->profile_picture
         ]);
         
+        return response()->json(['success' => true]);
+    }
+
+    public function acceptTerms(Request $request)
+    {
+        if (!session('admin_logged_in')) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $admin = AdminUser::find(session('admin_id'));
+        $admin->terms_accepted_at = now();
+        $admin->save();
+
+        session(['terms_accepted' => true]);
         return response()->json(['success' => true]);
     }
 

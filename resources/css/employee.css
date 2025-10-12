@@ -18,7 +18,17 @@
     color: #e2e8f0 !important;
 }
 
+
+
 [data-theme="dark"] .sidebar .nav-link {
+    color: #a0aec0 !important;
+}
+
+[data-theme="dark"] .sidebar * {
+    color: #fff !important;
+}
+
+[data-theme="dark"] .sidebar .text-muted {
     color: #a0aec0 !important;
 }
 
@@ -80,6 +90,18 @@ body {
     min-height: 100vh;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .text-white {
+    color: #2d3748 !important;
+}
+
+.sidebar .text-white-50 {
+    color: #718096 !important;
+}
+
+.sidebar .dropdown-toggle {
+    color: #2d3748 !important;
 }
 
 .sidebar .nav-link {

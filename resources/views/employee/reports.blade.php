@@ -84,6 +84,37 @@
         </div>
     </div>
 
+    <!-- Payroll Automation Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fa-solid fa-robot me-2"></i>Payroll Automation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="mb-2"><strong>Automated Schedule:</strong> Payroll generates automatically on the 1st of each month</p>
+                            <p class="mb-2"><strong>Last Generation:</strong> {{ \App\Models\Payroll::latest()->first()?->created_at?->format('M d, Y H:i') ?? 'Never' }}</p>
+                            <p class="mb-0"><strong>Next Scheduled:</strong> {{ now()->addMonth()->startOfMonth()->format('M 1, Y 09:00') }}</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <form method="POST" action="{{ route('payroll.autoGenerate') }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-info" onclick="return confirm('Run payroll automation now?')">
+                                    <i class="fa-solid fa-play me-1"></i>Run Now
+                                </button>
+                            </form>
+                            <a href="{{ route('employee.payroll') }}" class="btn btn-outline-info">
+                                <i class="fa-solid fa-cog me-1"></i>Manage
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Report Cards -->
     <div class="row">
         <div class="col-md-6 mb-4">
