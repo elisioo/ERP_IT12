@@ -13,23 +13,23 @@
 <hr class="text-white mt-3 mb-3">
 
 <ul class="nav nav-pills flex-column mb-auto">
-    <li class="{{ ($active ?? '') === 'dashboard' ? 'active' : '' }}">
+    <li class="{{ ($page ?? '') === 'dashboard' ? 'active' : '' }}">
         <a href="{{ route('dashboard.index') }}"
-            class="nav-link {{ ($active ?? '') === 'dashboard' ? 'active' : 'text-white' }}">
+            class="nav-link {{ ($page ?? '') === 'dashboard' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-chart-line me-2"></i> Dashboard
         </a>
     </li>
 
-    <li class="{{ ($active ?? '') === 'orders' ? 'active' : '' }}">
+    <li class="{{ ($page ?? '') === 'orders' ? 'active' : '' }}">
         <a href="{{ route('orders.index') }}"
-            class="nav-link {{ ($active ?? '') === 'orders' ? 'active' : 'text-white' }}">
+            class="nav-link {{ ($page ?? '') === 'orders' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-receipt me-2"></i> Orders
         </a>
     </li>
 
-    <li class="{{ ($active ?? '') === 'menus' ? 'active' : '' }}">
-        <a href="{{ route('menus.index') }}"
-            class="nav-link {{ ($active ?? '') === 'menus' ? 'active' : 'text-white' }}">
+
+    <li class="{{ ($page ?? '') === 'menus' ? 'active' : '' }}">
+        <a href="{{ route('menus.index') }}" class="nav-link {{ ($page ?? '') === 'menus' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-clipboard-list me-2"></i> Menu
         </a>
     </li>

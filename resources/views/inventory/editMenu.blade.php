@@ -10,6 +10,17 @@
         </a>
     </div>
 
+    @if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>There were some problems with your input:</strong>
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
     <form action="{{ route('menus.update', $menu->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
@@ -53,6 +64,13 @@
                 <label class="form-label fw-bold">Price (₱)</label>
                 <input type="number" step="0.01" name="price" class="form-control"
                     value="{{ old('price', $menu->price) }}" required>
+            </div>
+
+            <!-- description -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Description</label>
+                <textarea name="description" class="form-control"
+                    rows="3">{{ old('description', $menu->description) }}</textarea>
             </div>
 
             <!-- Availability -->

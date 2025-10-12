@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Item;
+use App\Models\Inventory;
 use App\Models\Order;
 use App\Models\OrderLine;
 use Carbon\Carbon;
@@ -12,10 +12,10 @@ class InventoryDashboardController extends Controller
 {
         public function index()
         {
-            // 🔸 Generate alerts
+            // Generate alerts
             $stockAlert = $this->generateStockAlert();
 
-            // 🔸 Top 5 most bought menus
+            //  Top 5 most bought menus
             $topMenus = OrderLine::select(
                     'menu_id',
                     DB::raw('SUM(quantity) as total_qty'),
@@ -27,16 +27,16 @@ class InventoryDashboardController extends Controller
                 ->with(['menu.category'])
                 ->get();
 
-            // 🔸 Dashboard metrics
+            //  Dashboard metrics
             $totalOrders = Order::count();
             $avgOrderValue = Order::avg('total_amount');
             $totalRevenue = Order::sum('total_amount');
             $topSellingMeal = $topMenus->first();
 
-            // 🔸 Sales trend data (current month)
+            //  Sales trend data (current month)
             $salesTrend = $this->getSalesTrend();
 
-            // 🔸 Stock status for progress bar
+            //  Stock status for progress bar
             $stockStatus = $this->getStockStatus();
 
             return view('inventory.dashboard', [
@@ -56,15 +56,16 @@ class InventoryDashboardController extends Controller
     {
         $threshold = 10;
 
-        $totalLowStock = Item::where('quantity', '<', $threshold)->count();
-        $restockedLowStock = Item::where('quantity', '>=', $threshold)->count();
+        // Count all inventory items below and above threshold
+        $totalLowStock = Inventory::where('quantity', '<', $threshold)->count();
+        $restockedLowStock = Inventory::where('quantity', '>=', $threshold)->count();
 
         $totalItems = $totalLowStock + $restockedLowStock;
 
         if ($totalItems === 0) {
             return [
                 'percentage' => 100,
-                'text' => 'All items fully stocked'
+                'text' => 'No inventory data available',
             ];
         }
 
@@ -72,30 +73,39 @@ class InventoryDashboardController extends Controller
 
         return [
             'percentage' => $percentage,
-            'text' => "{$percentage}% of low-stock items restocked"
+            'text' => "{$percentage}% of low-stock items restocked",
         ];
     }
-        /**
-     * 🔔 Generate alert for low-stock items
-     */
+
+/**
+ * Generate alert for low-stock inventory
+ */
     private function generateStockAlert()
     {
         $threshold = 10;
-        $lowStockItems = Item::where('quantity', '<', $threshold)
-            ->orderBy('quantity', 'asc')
-            ->pluck('item_name')
-            ->take(3);
 
-        if ($lowStockItems->isEmpty()) {
+        // Get low-stock inventories with menu relationship
+        $lowStockMenus = Inventory::with('menu')
+            ->where('quantity', '<', $threshold)
+            ->orderBy('quantity', 'asc')
+            ->take(3)
+            ->get();
+
+        if ($lowStockMenus->isEmpty()) {
             return null;
         }
 
-        $itemList = $lowStockItems->join(', ');
+        // Collect menu names or fallback text if null
+        $menuNames = $lowStockMenus->map(function ($inv) {
+            return $inv->menu->menu_name ?? 'Not available';
+        });
+
+        $itemList = $menuNames->join(', ');
+
         return "Low stock alert: {$itemList} need to be reordered soon!";
     }
-
     /**
-     * 📈 Get total sales grouped by week for the current month
+     *  Get total sales grouped by week for the current month
      */
     private function getSalesTrend()
     {

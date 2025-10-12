@@ -25,5 +25,5 @@ class OrderLine extends Model
     public function menu()
     {
         return $this->belongsTo(Menu::class);
-    }
+    }   
 }

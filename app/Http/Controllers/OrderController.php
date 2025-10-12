@@ -6,13 +6,18 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\Menu;
-
+use App\Models\Inventory;
+use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Intervention\Image\ImageManagerStatic as Image;
+use Chartisan\PHP\Chartisan; 
 class OrderController extends Controller
 {
-    // 🗑️ Archive (Soft Delete) multiple orders
+    // Archive (Soft Delete) multiple orders
     public function bulkDelete(Request $request)
     {
         $ids = $request->input('ids');
+
 
         if ($ids) {
             Order::whereIn('id', $ids)->delete(); // Soft delete (archive)
@@ -22,14 +27,42 @@ class OrderController extends Controller
         return redirect()->back()->with('error', 'No orders selected.');
     }
 
-    // 📋 Display all active (non-archived) orders
-    public function index()
+    //  Display all active (non-archived) orders
+    public function index(Request $request)
     {
-        $orders = Order::with(['lines.menu'])
-                       ->whereNull('deleted_at') // exclude archived
-                       ->orderBy('order_date', 'desc')
-                       ->paginate(10); // pagination
+        $perPage = $request->get('perPage', 5);
+        $status = $request->get('status');
+        $search = $request->get('search');
+        $sort = $request->get('sort', 'desc'); // default newest first
 
+        $ordersQuery = Order::with(['lines.menu'])
+            ->whereNull('deleted_at');
+
+        //  Search filter (by order no or customer)
+        if (!empty($search)) {
+            $ordersQuery->where(function ($query) use ($search) {
+                $query->where('order_number', 'like', "%{$search}%")
+                    ->orWhere('customer_name', 'like', "%{$search}%");
+            });
+        }
+
+        //  Status filter
+        if (!empty($status)) {
+            $ordersQuery->where('status', $status);
+        }
+
+        //  Sort by order date
+        $ordersQuery->orderBy('order_date', $sort);
+
+        $orderss = $ordersQuery->paginate($perPage)
+            ->appends([
+                'perPage' => $perPage,
+                'status' => $status,
+                'search' => $search,
+                'sort' => $sort,
+            ]);
+
+        // Summary counts
         $summary = [
             'total'      => Order::whereNull('deleted_at')->count(),
             'pending'    => Order::where('status', 'pending')->whereNull('deleted_at')->count(),
@@ -50,70 +83,140 @@ class OrderController extends Controller
 
         $monthlyOrders = Order::whereMonth('order_date', now()->month)->whereNull('deleted_at')->count();
         $yearlyOrders  = Order::whereYear('order_date', now()->year)->whereNull('deleted_at')->count();
+        $archivedOrders = Order::onlyTrashed()
+            ->with(['lines.menu'])
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(5);
+
+        $stockStatus = $this->getStockStatus();
+        $stockAlert = $this->generateStockAlert();
 
         return view('inventory.order', compact(
-            'orders',
+            'orderss',
             'summary',
             'trendingMenus',
             'latestMenus',
             'monthlyOrders',
-            'yearlyOrders'
+            'yearlyOrders',
+            'perPage',
+            'status',
+            'search',
+            'sort',
+            'archivedOrders',
+            'stockStatus',
+            'stockAlert'
         ), ['page' => 'orders']);
+
     }
 
-    // ➕ Show create form
+
+    //  Show create form
     public function create()
     {
         $menus = Menu::where('is_available', true)->get();
         return view('inventory.addOrders', compact('menus'), ['page' => 'orders']);
     }
 
-    // 💾 Store new order with order lines
     public function store(Request $request)
     {
-        $latestOrder = Order::latest()->first();
-        $nextNumber = $latestOrder ? intval(substr($latestOrder->order_number, 4)) + 1 : 1;
-        $orderNumber = 'ORD-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-
-        $order = Order::create([
-            'order_number'  => $orderNumber,
-            'customer_name' => $request->customer_name,
-            'order_date'    => $request->order_date,
-            'status'        => $request->status ?? 'pending',
-            'total_amount'  => 0,
+        $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'order_date'    => 'required|date',
+            'status'        => 'required|in:pending,processing,completed,canceled',
+            'items'         => 'required|array|min:1',
+            'items.*.menu_id' => 'required|exists:menus,id',
+            'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        $total = 0;
+        // ✅ Generate a unique order number safely
+        $orderNumber = null;
+        $attempts = 0;
 
-        if ($request->has('items')) {
-            foreach ($request->items as $item) {
-                $menu = Menu::find($item['menu_id']);
-                if ($menu) {
-                    $lineTotal = $menu->price * $item['quantity'];
-                    OrderLine::create([
-                        'order_id' => $order->id,
-                        'menu_id'  => $menu->id,
-                        'quantity' => $item['quantity'],
-                        'price'    => $lineTotal,
-                    ]);
-                    $total += $lineTotal;
-                }
+        do {
+            $latestOrder = Order::latest('id')->first();
+            $nextNumber = $latestOrder ? intval(substr($latestOrder->order_number, 4)) + 1 : 1;
+            $orderNumber = 'ORD-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+            $exists = Order::where('order_number', $orderNumber)->withTrashed()->exists();
+            $attempts++;
+        } while ($exists && $attempts < 10);
+
+        if ($exists) {
+            return back()->with('error', 'Failed to generate a unique order number after several attempts. Please try again.');
+        }
+
+        // ✅ Validate stock availability before creating the order
+        foreach ($request->items as $i => $item) {
+            $menu = Menu::with('inventory')->find($item['menu_id']);
+            $availableQty = $menu->inventory->quantity ?? 0;
+
+            if ($item['quantity'] > $availableQty) {
+                return back()
+                    ->withInput()
+                    ->with('error', "Cannot order more than available stock for \"{$menu->menu_name}\". Available: {$availableQty}, Requested: {$item['quantity']}.");
             }
         }
 
-        $order->update(['total_amount' => $total]);
+        DB::beginTransaction();
+        try {
+            $order = Order::create([
+                'order_number'  => $orderNumber,
+                'customer_name' => $request->customer_name,
+                'order_date'    => $request->order_date,
+                'status'        => $request->status ?? 'pending',
+                'total_amount'  => 0,
+            ]);
 
-        return redirect()->route('orders.index')->with('success', 'Order created successfully!');
+            $total = 0;
+
+            foreach ($request->items as $item) {
+                $menu = Menu::with('inventory')->findOrFail($item['menu_id']);
+                $qty = (int) $item['quantity'];
+                $lineTotal = $menu->price * $qty;
+
+                OrderLine::create([
+                    'order_id' => $order->id,
+                    'menu_id'  => $menu->id,
+                    'quantity' => $qty,
+                    'price'    => $lineTotal,
+                ]);
+
+                // Deduct inventory
+                $inventory = $menu->inventory;
+                if ($inventory) {
+                    $inventory->quantity = max(0, $inventory->quantity - $qty);
+                    $inventory->save();
+
+                    // Update menu availability
+                    if ($inventory->quantity <= 0) {
+                        $menu->is_available = false;
+                        $menu->save();
+                    }
+                } else {
+                    throw new \Exception("Inventory record missing for menu ID {$menu->id}");
+                }
+
+                $total += $lineTotal;
+            }
+
+            $order->update(['total_amount' => $total]);
+
+            DB::commit();
+            return redirect()->route('orders.index')->with('success', 'Order created successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Failed to create order: ' . $e->getMessage());
+        }
     }
 
-    // 🔍 Show order details
+
+    // Show order details
     public function show(Order $order)
     {
         $order->load(['lines.menu']);
         return view('inventory.orderDetails', compact('order'), ['page' => 'orders']);
     }
 
-    // ✏️ Show edit form
+    // Show edit form
     public function edit(Order $order)
     {
         $menus = Menu::all();
@@ -121,78 +224,245 @@ class OrderController extends Controller
         return view('inventory.editOrders', compact('order', 'menus'), ['page' => 'orders']);
     }
 
-    // 🔄 Update order
     public function update(Request $request, Order $order)
     {
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'order_date'    => 'required|date',
             'status'        => 'required|in:pending,processing,completed,canceled',
+            'items'         => 'nullable|array',
+            'items.*.menu_id' => 'required_with:items|exists:menus,id',
+            'items.*.quantity' => 'required_with:items|integer|min:1',
         ]);
 
-        $order->update($request->only(['customer_name', 'order_date', 'status']));
+        DB::beginTransaction();
+        try {
+            // 1) Restore inventory from existing order lines
+            foreach ($order->lines as $line) {
+                $menu = Menu::with('inventory')->find($line->menu_id);
+                if ($menu && $menu->inventory) {
+                    $menu->inventory->quantity += $line->quantity;
+                    $menu->inventory->save();
 
-        if ($request->has('items')) {
-            $order->lines()->delete();
-
-            $total = 0;
-            foreach ($request->items as $item) {
-                $menu = Menu::find($item['menu_id']);
-                if ($menu) {
-                    $lineTotal = $menu->price * $item['quantity'];
-                    OrderLine::create([
-                        'order_id' => $order->id,
-                        'menu_id'  => $menu->id,
-                        'quantity' => $item['quantity'],
-                        'price'    => $lineTotal,
-                    ]);
-                    $total += $lineTotal;
+                    // After restore, mark menu available if qty > 0
+                    if ($menu->inventory->quantity > 0 && !$menu->is_available) {
+                        $menu->is_available = true;
+                        $menu->save();
+                    }
                 }
             }
-            $order->update(['total_amount' => $total]);
-        }
 
-        return redirect()->route('orders.index')->with('success', 'Order updated successfully!');
+            // 2) Remove old order lines
+            $order->lines()->delete();
+
+            // 3) Validate requested quantities against current inventory AFTER restore
+            $items = $request->items ?? [];
+            foreach ($items as $item) {
+                $menu = Menu::with('inventory')->find($item['menu_id']);
+                $availableQty = $menu->inventory->quantity ?? 0;
+                if ($item['quantity'] > $availableQty) {
+                    DB::rollBack();
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', "Cannot order more than available stock for \"{$menu->menu_name}\". Available: {$availableQty}, Requested: {$item['quantity']}.");
+                }
+            }
+
+            // 4) Recreate order lines and deduct inventory
+            $total = 0;
+            foreach ($items as $item) {
+                $menu = Menu::with('inventory')->findOrFail($item['menu_id']);
+                $qty = (int) $item['quantity'];
+                $lineTotal = $menu->price * $qty;
+
+                OrderLine::create([
+                    'order_id' => $order->id,
+                    'menu_id'  => $menu->id,
+                    'quantity' => $qty,
+                    'price'    => $lineTotal,
+                ]);
+
+                // Deduct inventory
+                if ($menu->inventory) {
+                    $menu->inventory->quantity = max(0, $menu->inventory->quantity - $qty);
+                    $menu->inventory->save();
+
+                    // Update menu availability
+                    if ($menu->inventory->quantity <= 0) {
+                        $menu->is_available = false;
+                        $menu->save();
+                    } else {
+                        if (!$menu->is_available) {
+                            $menu->is_available = true;
+                            $menu->save();
+                        }
+                    }
+                } else {
+                    throw new \Exception("Inventory record missing for menu ID {$menu->id}");
+                }
+
+                $total += $lineTotal;
+            }
+
+            // 5) Update order base fields and total
+            $order->update($request->only(['customer_name', 'order_date', 'status']));
+            $order->update(['total_amount' => $total]);
+
+            DB::commit();
+            return redirect()->route('orders.index')->with('success', 'Order updated successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withInput()->with('error', 'Failed to update order: ' . $e->getMessage());
+        }
     }
 
-    // 🗃️ Archive (Soft Delete) single order
+
+    // Archive (Soft Delete) single order
     public function destroy(Order $order)
     {
         $order->delete(); // Soft delete
         return redirect()->route('orders.index')->with('success', 'Order has been archived.');
     }
 
-    // 📦 View archived (soft deleted) orders
-    public function archived()
+    public function archiveSelection(Request $request)
     {
-        $orders = Order::onlyTrashed()
-            ->with(['lines.menu'])
-            ->orderByDesc('deleted_at')
-            ->paginate(10);
+        $ids = $request->input('ids');
 
-        return view('inventory.archivedOrders', compact('orders'), ['page' => 'orders']);
+        if (!$ids || count($ids) === 0) {
+            return redirect()->route('orders.index')
+                ->with('error', 'No orders selected for archiving.');
+        }
+
+        // Soft delete (archive) the selected orders
+        $count = Order::whereIn('id', $ids)->delete();
+
+        return redirect()->route('orders.index')
+            ->with('success', "$count order(s) successfully archived.");
     }
 
-    // ♻️ Restore archived order
+    public function updateArchiveDate(Request $request, $id)
+    {
+        $request->validate([
+            'deleted_at' => 'required|date',
+        ]);
+
+        $order = Order::onlyTrashed()->findOrFail($id);
+        $order->deleted_at = $request->deleted_at;
+        $order->save();
+
+        return response()->json(['success' => true]);
+    }
+    public function archived()
+    {
+        $archivedOrders = Order::onlyTrashed()
+            ->with(['lines.menu'])
+            ->orderBy('deleted_at', 'desc')
+            ->get();
+
+        // return HTML partial for modal body
+        return view('inventory.partials.archived_orders', compact('archivedOrders'));
+    }
+
     public function restore($id)
     {
         $order = Order::onlyTrashed()->findOrFail($id);
         $order->restore();
 
-        return redirect()->back()->with('success', 'Order has been restored.');
+        return redirect()->back()->with('success', 'Order restored successfully.');
     }
 
-    public function updateArchiveDate(Request $request, $id)
-{
-    $request->validate([
-        'deleted_at' => 'required|date',
-    ]);
+    public function forceDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'No orders selected to permanently delete.');
+        }
 
-    $order = Order::onlyTrashed()->findOrFail($id);
-    $order->deleted_at = $request->deleted_at;
-    $order->save();
+        DB::transaction(function () use ($ids) {
+            Order::onlyTrashed()->whereIn('id', $ids)->forceDelete();
+        });
 
-    return response()->json(['success' => true]);
-}
+        return redirect()->back()->with('success', 'Selected orders have been permanently deleted.');
+    }
+   
 
+    public function analytics(Request $request)
+    {
+        $request->validate([
+            'from_date' => 'required|date',
+            'to_date'   => 'required|date|after_or_equal:from_date',
+        ]);
+
+        $orders = Order::with('lines.menu')
+            ->whereBetween('order_date', [$request->from_date, $request->to_date])
+            ->get();
+
+        $totalSales = $orders->sum('total_amount');
+        $totalOrders = $orders->count();
+        
+
+        $pdf = Pdf::loadView('inventory.analytics_report', compact('orders', 'totalSales', 'totalOrders', 'request'));
+
+        return $pdf->stream('Sales_Report_'.$request->from_date.'_to_'.$request->to_date.'.pdf');
+    }
+    public function invoice(Order $order)
+    {
+        $order->load('lines.menu');
+
+        $pdf = Pdf::loadView('inventory.invoice', compact('order'));
+
+        return $pdf->stream('Invoice_'.$order->order_number.'.pdf');
+    }
+    private function getStockStatus()
+    {
+        $threshold = 10;
+
+        // Count all inventory items below and above threshold
+        $totalLowStock = Inventory::where('quantity', '<', $threshold)->count();
+        $restockedLowStock = Inventory::where('quantity', '>=', $threshold)->count();
+
+        $totalItems = $totalLowStock + $restockedLowStock;
+
+        if ($totalItems === 0) {
+            return [
+                'percentage' => 100,
+                'text' => 'No inventory data available',
+            ];
+        }
+
+        $percentage = round(($restockedLowStock / $totalItems) * 100, 0);
+
+        return [
+            'percentage' => $percentage,
+            'text' => "{$percentage}% of low-stock items restocked",
+        ];
+    }
+
+/**
+ * Generate alert for low-stock inventory
+ */
+    private function generateStockAlert()
+    {
+        $threshold = 10;
+
+        // Get low-stock inventories with menu relationship
+        $lowStockMenus = Inventory::with('menu')
+            ->where('quantity', '<', $threshold)
+            ->orderBy('quantity', 'asc')
+            ->take(3)
+            ->get();
+
+        if ($lowStockMenus->isEmpty()) {
+            return null;
+        }
+
+        // Collect menu names or fallback text if null
+        $menuNames = $lowStockMenus->map(function ($inv) {
+            return $inv->menu->menu_name ?? 'Not available';
+        });
+
+        $itemList = $menuNames->join(', ');
+
+        return "Low stock alert: {$itemList} need to be reordered soon!";
+    }
 }

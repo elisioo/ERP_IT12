@@ -8,15 +8,20 @@
             <h5 class="fw-bold h5">Order ID <span class="text-primary">#{{ $order->order_number }}</span></h5>
             <p class="text-muted mb-0">Orders > <span class="text-danger">Order Details</span></p>
         </div>
-        <span class="badge 
+        <div>
+            <span class="badge 
             @if($order->status == 'pending') bg-secondary
             @elseif($order->status == 'processing') bg-warning text-dark
             @elseif($order->status == 'completed') bg-success
             @elseif($order->status == 'cancelled') bg-danger
             @endif
             px-3 py-2">
-            {{ ucfirst($order->status) }}
-        </span>
+                {{ ucfirst($order->status) }}
+            </span>
+            <a href="{{ route('orders.invoice', $order->id) }}" target="_blank" class="btn btn-sm btn-secondary">
+                <i class="fa fa-print"></i> Print Invoice
+            </a>
+        </div>
     </div>
 
     <div class="row">
@@ -73,6 +78,7 @@
         <!-- Right Column -->
         <div class="col-lg-4">
             <!-- Order Tracking -->
+
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-white fw-bold">Order Tracking</div>
                 <div class="card-body">
