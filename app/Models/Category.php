@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
+    use SoftDeletes;
     protected $table = 'categories';
     protected $fillable = ['category_name', 'description', 'image'];
 
@@ -19,5 +21,15 @@ class Category extends Model
     public function menus()
     {
         return $this->hasMany(Menu::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(Item::class);
+    }
+
+    public function inventories()
+    {
+        return $this->hasMany(Inventory::class);
     }
 }

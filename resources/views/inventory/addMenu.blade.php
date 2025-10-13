@@ -34,6 +34,11 @@
                             <label class="form-label fw-bold">Price (₱)</label>
                             <input type="number" step="0.01" name="items[0][price]" class="form-control" required>
                         </div>
+                        <!-- Description -->
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Description</label>
+                            <input type="text" name="items[0][description]" class="form-control">
+                        </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Image</label>
                             <input type="file" name="items[0][image]" class="form-control" accept="image/*">

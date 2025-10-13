@@ -1,5 +1,5 @@
 <!-- Sidebar -->
-<a href="{{ route('dashboard') }}"
+<a href="{{ route('dashboard.index') }}"
     class="d-flex align-items-center mb-3 mb-md-0 me-md-auto ps-2 text-white text-decoration-none">
     <div class="d-flex align-items-center">
         <img src="{{ asset('img/kdr.png') }}" alt="Korean Diner Logo" style="width: 40px; height: 40px;" class="me-3">
@@ -13,23 +13,23 @@
 <hr class="text-white mt-3 mb-3">
 
 <ul class="nav nav-pills flex-column mb-auto">
-    <li class="{{ ($active ?? '') === 'dashboard' ? 'active' : '' }}">
-        <a href="{{ route('dashboard') }}"
-            class="nav-link {{ ($active ?? '') === 'dashboard' ? 'active' : 'text-white' }}">
+    <li class="{{ ($page ?? '') === 'dashboard' ? 'active' : '' }}">
+        <a href="{{ route('dashboard.index') }}"
+            class="nav-link {{ ($page ?? '') === 'dashboard' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-chart-line me-2"></i> Dashboard
         </a>
     </li>
 
-    <li class="{{ ($active ?? '') === 'orders' ? 'active' : '' }}">
+    <li class="{{ ($page ?? '') === 'orders' ? 'active' : '' }}">
         <a href="{{ route('orders.index') }}"
-            class="nav-link {{ ($active ?? '') === 'orders' ? 'active' : 'text-white' }}">
+            class="nav-link {{ ($page ?? '') === 'orders' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-receipt me-2"></i> Orders
         </a>
     </li>
 
-    <li class="{{ ($active ?? '') === 'menus' ? 'active' : '' }}">
-        <a href="{{ route('menus.index') }}"
-            class="nav-link {{ ($active ?? '') === 'menus' ? 'active' : 'text-white' }}">
+
+    <li class="{{ ($page ?? '') === 'menus' ? 'active' : '' }}">
+        <a href="{{ route('menus.index') }}" class="nav-link {{ ($page ?? '') === 'menus' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-clipboard-list me-2"></i> Menu
         </a>
     </li>
@@ -46,7 +46,7 @@
         </a>
     </li>
     <li class="{{ ($active ?? '') === 'inventory' ? 'active' : '' }}">
-        <a href="{{ route('inventory') }}"
+        <a href="{{ route('inventory.index') }}"
             class="nav-link {{ ($active ?? '') === 'inventory' ? 'active' : 'text-white' }}">
             <i class="fa-solid fa-box-open me-2"></i> Inventory
         </a>
@@ -60,16 +60,16 @@
 <!-- Dropdown at bottom -->
 <div class="dropdown mt-auto">
     <hr class="text-white">
-    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1"
+    <a href="#" class="d-flex align-items-center text-light text-decoration-none dropdown-toggle" id="dropdownUser1"
         data-bs-toggle="dropdown" aria-expanded="false">
-        <img src="https://i.pinimg.com/originals/45/de/42/45de424a29a8000a65787ec74440799c.png" alt="" width="32"
-            height="32" class="rounded-circle me-2">
-        <strong>Admin</strong>
+        <img src="{{ session('admin_profile_picture') ? asset('storage/' . session('admin_profile_picture')) : 'https://i.pinimg.com/originals/45/de/42/45de424a29a8000a65787ec74440799c.png' }}"
+            alt="" width="32" height="32" class="rounded-circle me-2" style="object-fit: cover;">
+        <strong>{{ session('admin_username', 'Admin') }}</strong>
     </a>
     <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-        <li><a class="dropdown-item" href="#">Settings</a></li>
-        <li><a class="dropdown-item" href="#">Profile</a></li>
-
+        <!-- <li><a class="dropdown-item" href="#">Settings</a></li>
+        <li><a class="dropdown-item" href="#">Profile</a></li> -->
+        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">Profile</a></li>
         <li><a class="dropdown-item" href="/">Return</a></li>
         <li><a class="dropdown-item" href="{{ route('employee.dashboard') }}">Manage Employee</a></li>
         <li>

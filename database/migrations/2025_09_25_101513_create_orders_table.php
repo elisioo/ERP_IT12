@@ -22,6 +22,7 @@ return new class extends Migration
                   ->default('pending');
             $table->decimal('total_amount', 10, 2)->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

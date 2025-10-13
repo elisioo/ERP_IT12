@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" href="{{ asset('img/kdr.png') }}" type="image/x-icon">
 
+    <link rel="stylesheet" href="{{ asset('css/employee.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -21,9 +22,27 @@
     }
     </style>
 
+
+
 </head>
 
 <body>
+    <script>
+    // If already loaded before, hide immediately
+    if (sessionStorage.getItem('loaderShown')) {
+        document.write('<style>#loadingScreen { display: none !important; }</style>');
+    }
+    </script>
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <img src="{{ asset('img/kdr.png') }}" alt="Korean Diner Logo" class="loading-logo">
+            <div class="loading-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+    </div>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3 col-lg-2 bg-dark p-3 vh-100 d-flex flex-column">
@@ -35,7 +54,28 @@
             </div>
         </div>
     </div>
+    @include('employee.modals.profile')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    window.addEventListener('load', function() {
+        const loader = document.getElementById('loadingScreen');
+
+        // Check if the loader was already shown in this browser tab
+        if (!sessionStorage.getItem('loaderShown')) {
+            // Show loader the first time
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+                // Mark as shown
+                sessionStorage.setItem('loaderShown', 'true');
+            }, 1000); // You can adjust this delay
+        } else {
+            // Skip loader for next pages
+            loader.style.display = 'none';
+        }
+    });
+    </script>
+
 </body>
 
 

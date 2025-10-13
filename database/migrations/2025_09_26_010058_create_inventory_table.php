@@ -13,10 +13,13 @@ return new class extends Migration
     {
         Schema::create('inventory', function (Blueprint $table) {
             $table->id();
-
-            $table->unsignedBigInteger('product_id'); // No foreign key constraint
+            $table->foreignId('category_id')->constrained()->cascadeOnDelete();
             $table->foreignId('menu_id')->constrained()->cascadeOnDelete();
             $table->integer('quantity')->default(0);
+            $table->decimal('cost_price', 8, 2)->nullable();
+            $table->string('unit', 50);
+            $table->integer('restock_amount')->default(0);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

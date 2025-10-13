@@ -109,6 +109,7 @@ class AuthController extends Controller
         return response()->json(['success' => true]);
     }
 
+
     public function logout()
     {
         session()->forget(['admin_logged_in', 'admin_id', 'admin_username', 'admin_profile_picture']);

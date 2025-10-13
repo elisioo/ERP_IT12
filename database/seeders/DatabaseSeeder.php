@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Menu;
+use App\Models\OrderLine;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -21,6 +23,12 @@ class DatabaseSeeder extends Seeder
         // ]);
         
         $this->call(CategorySeeder::class);
+        $this->call(ItemSeeder::class);
+        $this->call(MenuSeeder::class);
+        $this->call(OrderLineSeeder::class);
+
     }
+
+
  
 }
