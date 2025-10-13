@@ -1,5 +1,7 @@
 # ERP_KOREANDINERDAVAO
 
+![ERP_KOREANDINERDAVAO Logo](public/img/kdr.png)
+
 ## Overview
 ERP_KOREANDINERDAVAO is an all-in-one Enterprise Resource Planning (ERP) system designed specifically for Korean Diner Davao Restaurant. This system streamlines restaurant operations by integrating employee management, attendance tracking, payroll distribution, and inventory control into a single, user-friendly platform.
 
