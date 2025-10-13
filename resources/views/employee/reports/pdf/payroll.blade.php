@@ -31,7 +31,7 @@
     <div class="summary">
         <div class="summary-item"><strong>Total Employees:</strong> {{ $payrolls->count() }}</div>
         <div class="summary-item"><strong>Total Hours:</strong> {{ number_format($totalHours, 1) }}</div>
-        <div class="summary-item"><strong>Total Gross Pay:</strong> ₱{{ number_format($totalGrossPay, 2) }}</div>
+        <div class="summary-item"><strong>Total Gross Pay:</strong> PHP{{ number_format($totalGrossPay, 2) }}</div>
     </div>
 
     <table>
@@ -49,9 +49,9 @@
             @forelse($payrolls as $payroll)
             <tr>
                 <td>{{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}</td>
-                <td class="text-right">₱{{ number_format($payroll->hourly_rate, 2) }}</td>
+                <td class="text-right">PHP {{ number_format($payroll->hourly_rate, 2) }}</td>
                 <td class="text-center">{{ $payroll->total_hours }} hrs</td>
-                <td class="text-right">₱{{ number_format($payroll->gross_pay, 2) }}</td>
+                <td class="text-right">PHP {{ number_format($payroll->gross_pay, 2) }}</td>
                 <td class="text-center">
                     <span class="badge {{ $payroll->status == 'paid' ? 'badge-success' : 'badge-warning' }}">
                         {{ ucfirst($payroll->status) }}
@@ -68,7 +68,7 @@
             <tr class="total-row">
                 <td colspan="2">TOTAL</td>
                 <td class="text-center">{{ number_format($totalHours, 1) }} hrs</td>
-                <td class="text-right">₱{{ number_format($totalGrossPay, 2) }}</td>
+                <td class="text-right">PHP {{ number_format($totalGrossPay, 2) }}</td>
                 <td colspan="2"></td>
             </tr>
             @endif

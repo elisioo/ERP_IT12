@@ -13,6 +13,9 @@
             <button class="btn btn-info btn-sm me-2" data-bs-toggle="modal" data-bs-target="#employeeListModal">
                 <i class="fa-solid fa-users me-1"></i> List of Employees
             </button>
+            <button class="btn btn-warning btn-sm me-2" data-bs-toggle="modal" data-bs-target="#autoTimeoutModal">
+                <i class="fa-solid fa-clock-rotate-left me-1"></i> Auto Time-Out
+            </button>
             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
                 <i class="fa-solid fa-user-plus me-1"></i> Add Employee
             </button>
@@ -83,8 +86,16 @@
                                             @endif
                                         </span>
                                         @if($attendance && $attendance->time_out)
-                                            <small class="text-muted d-block" id="time-out-seconds-{{ $employee->id }}">
-                                                {{ \Carbon\Carbon::parse($attendance->time_out)->format('H:i:s') }}
+                                            <small class="d-block">
+                                                @if($attendance->timeout_type === 'manual')
+                                                    <span class="badge bg-primary">Manual</span>
+                                                @elseif($attendance->timeout_type === 'auto_immediate')
+                                                    <span class="badge bg-warning">Auto Immediate</span>
+                                                @elseif($attendance->timeout_type === 'auto_scheduled')
+                                                    <span class="badge bg-info">Auto Scheduled</span>
+                                                @else
+                                                    <span class="badge bg-secondary">Unknown</span>
+                                                @endif
                                             </small>
                                         @endif
                                     </div>
@@ -139,6 +150,7 @@
 
 @include('employee.modals.add_employee')
 @include('employee.modals.employee_list')
+@include('employee.modals.auto_timeout')
 
 @endsection
 @vite('resources/js/attendance.js')

@@ -1,0 +1,105 @@
+<div class="modal fade" id="deductionHistoryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Deduction History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Employee: <strong id="historyEmployeeName"></strong></p>
+                <div id="deductionHistoryContent">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('[data-bs-target="#deductionHistoryModal"]')) {
+            const payrollId = e.target.dataset.payrollId;
+            const employeeName = e.target.dataset.employeeName;
+            
+            document.getElementById('historyEmployeeName').textContent = employeeName;
+            
+            // Load deduction history
+            fetch(`/payroll/${payrollId}/deductions`)
+                .then(response => response.json())
+                .then(data => {
+                    const content = document.getElementById('deductionHistoryContent');
+                    
+                    if (data.deductions.length === 0) {
+                        content.innerHTML = '<div class="alert alert-info">No deductions found for this payroll.</div>';
+                        return;
+                    }
+                    
+                    let html = '<div class="table-responsive"><table class="table table-sm">';
+                    html += '<thead><tr><th>Type</th><th>Details</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead><tbody>';
+                    
+                    data.deductions.forEach(deduction => {
+                        let details = '';
+                        if (deduction.type === 'late') {
+                            details = `${deduction.duration} ${deduction.time_unit}`;
+                        } else {
+                            details = deduction.reason;
+                        }
+                        
+                        html += `<tr>
+                            <td><span class="badge ${deduction.type === 'late' ? 'bg-warning' : 'bg-danger'}">${deduction.type}</span></td>
+                            <td>${details}</td>
+                            <td>₱${parseFloat(deduction.amount).toFixed(2)}</td>
+                            <td>${new Date(deduction.created_at).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="removeDeduction(${deduction.id})" title="Remove deduction">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table></div>';
+                    html += `<div class="mt-2"><strong>Total Deductions: ₱${data.total.toFixed(2)}</strong></div>`;
+                    
+                    content.innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('deductionHistoryContent').innerHTML = 
+                        '<div class="alert alert-danger">Error loading deduction history.</div>';
+                });
+        }
+    });
+    
+    // Function to remove deduction
+    window.removeDeduction = function(deductionId) {
+        if (confirm('Are you sure you want to remove this deduction?')) {
+            fetch(`/payroll/deduction/${deductionId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error removing deduction');
+                }
+            })
+            .catch(error => {
+                alert('Error removing deduction');
+            });
+        }
+    };
+});
+</script>

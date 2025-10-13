@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\Attendance;
+use App\Models\ScheduledTimeout;
 
 class AttendanceController extends Controller
 {
@@ -128,7 +129,10 @@ class AttendanceController extends Controller
             ]);
         } elseif ($attendance->time_in && !$attendance->time_out) {
             // Second click - Time Out
-            $attendance->update(['time_out' => $currentTime]);
+            $attendance->update([
+                'time_out' => $currentTime,
+                'timeout_type' => 'manual'
+            ]);
             
             return response()->json([
                 'success' => true,
@@ -179,5 +183,89 @@ class AttendanceController extends Controller
         $employee->delete();
 
         return redirect()->back()->with('success', 'Employee permanently deleted.');
+    }
+
+    public function autoTimeout(Request $request)
+    {
+        $request->validate([
+            'employee_ids' => 'required|array',
+            'employee_ids.*' => 'exists:employees,id',
+            'timeout_time' => 'required|date_format:H:i',
+            'timeout_option' => 'required|in:immediate,scheduled'
+        ]);
+
+        $today = now()->toDateString();
+        $timeoutTime = $request->timeout_time;
+        
+        if ($request->timeout_option === 'immediate') {
+            $updated = $this->executeTimeouts($request->employee_ids, $timeoutTime, $today, 'auto_immediate');
+            return redirect()->back()->with('success', "Auto time-out set for {$updated} employees at {$timeoutTime}.");
+        } else {
+            // Schedule for later
+            ScheduledTimeout::create([
+                'employee_ids' => $request->employee_ids,
+                'scheduled_time' => $timeoutTime,
+                'scheduled_date' => $today
+            ]);
+            
+            $count = count($request->employee_ids);
+            return redirect()->back()->with('success', "Scheduled auto time-out for {$count} employees at {$timeoutTime}.");
+        }
+    }
+    
+    private function executeTimeouts($employeeIds, $timeoutTime, $date, $timeoutType = 'auto_scheduled')
+    {
+        $updated = 0;
+        
+        foreach ($employeeIds as $employeeId) {
+            $attendance = Attendance::where('employee_id', $employeeId)
+                                  ->where('date', $date)
+                                  ->whereNotNull('time_in')
+                                  ->whereNull('time_out')
+                                  ->first();
+
+            if ($attendance) {
+                $attendance->update([
+                    'time_out' => $timeoutTime,
+                    'timeout_type' => $timeoutType
+                ]);
+                $updated++;
+            }
+        }
+        
+        return $updated;
+    }
+    
+    public function checkScheduledTimeouts()
+    {
+        $currentTime = now()->format('H:i');
+        $today = now()->toDateString();
+        
+        $scheduledTimeouts = ScheduledTimeout::where('scheduled_date', $today)
+                                           ->where('scheduled_time', '<=', $currentTime)
+                                           ->where('executed', false)
+                                           ->get();
+        
+        $totalProcessed = 0;
+        
+        foreach ($scheduledTimeouts as $scheduled) {
+            $processed = $this->executeTimeouts(
+                $scheduled->employee_ids, 
+                $scheduled->scheduled_time, 
+                $scheduled->scheduled_date
+            );
+            
+            $scheduled->update([
+                'executed' => true,
+                'executed_at' => now()
+            ]);
+            
+            $totalProcessed += $processed;
+        }
+        
+        return response()->json([
+            'processed' => $totalProcessed,
+            'schedules_executed' => $scheduledTimeouts->count()
+        ]);
     }
 }

@@ -130,6 +130,27 @@ Route::post('/payroll/{id}/mark-paid', [PayrollController::class, 'markPaid'])->
 Route::post('/payroll/bulk-pay', [PayrollController::class, 'bulkPay'])->name('payroll.bulkPay');
 Route::post('/payroll/auto-generate', [PayrollController::class, 'autoGenerate'])->name('payroll.autoGenerate');
 Route::put('/employee/{id}/rate', [PayrollController::class, 'updateRate'])->name('employee.updateRate');
+Route::post('/payroll/deduction', [PayrollController::class, 'storeDeduction'])->name('payroll.deduction.store');
+Route::get('/payroll/{id}/deductions', [PayrollController::class, 'getDeductions'])->name('payroll.deductions');
+Route::delete('/payroll/deduction/{id}', [PayrollController::class, 'deleteDeduction'])->name('payroll.deduction.delete');
+Route::get('/debug/attendance', function() {
+    $month = request('month', now()->format('Y-m'));
+    $employees = \App\Models\Employee::with(['attendances' => function($q) use ($month) {
+        $q->whereYear('date', \Carbon\Carbon::parse($month)->year)
+          ->whereMonth('date', \Carbon\Carbon::parse($month)->month);
+    }])->get();
+    
+    $debug = [];
+    foreach ($employees as $employee) {
+        $debug[] = [
+            'employee' => $employee->first_name . ' ' . $employee->last_name,
+            'attendance_count' => $employee->attendances->count(),
+            'attendances' => $employee->attendances->toArray()
+        ];
+    }
+    
+    return response()->json(['month' => $month, 'data' => $debug]);
+});
 
 Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
 Route::get('/reports/attendance', [\App\Http\Controllers\ReportController::class, 'attendance'])->name('reports.attendance');
@@ -140,6 +161,8 @@ Route::post('/settings/update', [\App\Http\Controllers\SettingsController::class
 });
 Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->name('attendance.update');
 Route::post('/attendance/{id}/toggle', [AttendanceController::class, 'toggle'])->name('attendance.toggle');
+Route::post('/attendance/auto-timeout', [AttendanceController::class, 'autoTimeout'])->name('attendance.autoTimeout');
+Route::get('/attendance/check-scheduled-timeouts', [AttendanceController::class, 'checkScheduledTimeouts'])->name('attendance.checkScheduledTimeouts');
 Route::post('/employee/add', [AttendanceController::class, 'store'])->name('employee.add');
 Route::post('/employee/store', [AttendanceController::class, 'store'])->name('employee.store');
 

@@ -10,7 +10,8 @@ class Attendance extends Model
         'employee_id',
         'date',
         'time_in',
-        'time_out'
+        'time_out',
+        'timeout_type'
     ];
     public function employee(){
         return $this->belongsTo(Employee::class);
