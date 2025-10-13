@@ -132,9 +132,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Modal trigger handler
     document.addEventListener('click', function(e) {
-        if (e.target.matches('[data-bs-target="#deductionModal"]')) {
-            const payrollId = e.target.dataset.payrollId;
-            const employeeName = e.target.dataset.employeeName;
+        const target = e.target.closest('[data-bs-target="#deductionModal"]');
+        if (target) {
+            const payrollId = target.dataset.payrollId;
+            const employeeName = target.dataset.employeeName;
             
             document.getElementById('deductionPayrollId').value = payrollId;
             document.getElementById('deductionEmployeeName').textContent = employeeName;

@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('inventory', function (Blueprint $table) {
-            $table->unsignedBigInteger('product_id')->nullable()->change();
-        });
+        // Column 'product_id' does not exist in inventory table - no action needed
     }
 
     /**
@@ -21,8 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('inventory', function (Blueprint $table) {
-            $table->unsignedBigInteger('product_id')->nullable(false)->change();
-        });
+        // Column 'product_id' does not exist in inventory table - no action needed
     }
 };

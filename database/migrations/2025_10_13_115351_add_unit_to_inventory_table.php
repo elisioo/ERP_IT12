@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('inventory', function (Blueprint $table) {
-            $table->string('unit', 50)->after('cost_price');
-        });
+        // Column already exists in original migration - no action needed
     }
 
     /**
@@ -21,8 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('inventory', function (Blueprint $table) {
-            $table->dropColumn('unit');
-        });
+        // Column exists in original migration - no action needed
     }
 };

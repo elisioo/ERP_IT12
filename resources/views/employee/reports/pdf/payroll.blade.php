@@ -32,15 +32,19 @@
         <div class="summary-item"><strong>Total Employees:</strong> {{ $payrolls->count() }}</div>
         <div class="summary-item"><strong>Total Hours:</strong> {{ number_format($totalHours, 1) }}</div>
         <div class="summary-item"><strong>Total Gross Pay:</strong> PHP{{ number_format($totalGrossPay, 2) }}</div>
+        <div class="summary-item"><strong>Total Deductions:</strong> PHP{{ number_format($payrolls->sum('total_deductions'), 2) }}</div>
+        <div class="summary-item"><strong>Total Net Pay:</strong> PHP{{ number_format($payrolls->sum('net_pay'), 2) }}</div>
     </div>
 
     <table>
         <thead>
             <tr>
                 <th>Employee</th>
-                <th>Hourly Rate</th>
-                <th>Total Hours</th>
+                <th style="font-weight: bold;">Net Pay</th>
                 <th>Gross Pay</th>
+                <th>Deductions</th>
+                <th>Total Hours</th>
+                <th>Hourly Rate</th>
                 <th>Status</th>
                 <th>Pay Date</th>
             </tr>
@@ -49,9 +53,11 @@
             @forelse($payrolls as $payroll)
             <tr>
                 <td>{{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}</td>
-                <td class="text-right">PHP {{ number_format($payroll->hourly_rate, 2) }}</td>
-                <td class="text-center">{{ $payroll->total_hours }} hrs</td>
+                <td class="text-right" style="font-weight: bold;">PHP {{ number_format($payroll->net_pay, 2) }}</td>
                 <td class="text-right">PHP {{ number_format($payroll->gross_pay, 2) }}</td>
+                <td class="text-right">PHP {{ number_format($payroll->total_deductions, 2) }}</td>
+                <td class="text-center">{{ $payroll->total_hours }} hrs</td>
+                <td class="text-right">PHP {{ number_format($payroll->hourly_rate, 2) }}</td>
                 <td class="text-center">
                     <span class="badge {{ $payroll->status == 'paid' ? 'badge-success' : 'badge-warning' }}">
                         {{ ucfirst($payroll->status) }}
@@ -61,15 +67,17 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="text-center">No payroll records found for this period</td>
+                <td colspan="8" class="text-center">No payroll records found for this period</td>
             </tr>
             @endforelse
             @if($payrolls->count() > 0)
             <tr class="total-row">
-                <td colspan="2">TOTAL</td>
-                <td class="text-center">{{ number_format($totalHours, 1) }} hrs</td>
+                <td>TOTAL</td>
+                <td class="text-right" style="font-weight: bold;">PHP {{ number_format($payrolls->sum('net_pay'), 2) }}</td>
                 <td class="text-right">PHP {{ number_format($totalGrossPay, 2) }}</td>
-                <td colspan="2"></td>
+                <td class="text-right">PHP {{ number_format($payrolls->sum('total_deductions'), 2) }}</td>
+                <td class="text-center">{{ number_format($totalHours, 1) }} hrs</td>
+                <td colspan="3"></td>
             </tr>
             @endif
         </tbody>

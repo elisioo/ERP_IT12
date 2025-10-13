@@ -18,6 +18,8 @@ return new class extends Migration
             $table->decimal('total_hours', 8, 2);
             $table->decimal('hourly_rate', 8, 2);
             $table->decimal('gross_pay', 10, 2);
+            $table->decimal('total_deductions', 10, 2)->default(0);
+            $table->decimal('net_pay', 10, 2)->default(0);
             $table->enum('status', ['pending', 'paid'])->default('pending');
             $table->date('pay_date')->nullable();
             $table->timestamps();

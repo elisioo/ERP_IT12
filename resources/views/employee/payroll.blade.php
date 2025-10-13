@@ -58,7 +58,7 @@
                         <i class="fa-solid fa-money-bill me-1"></i>Pay Selected
                     </button>
                 </div>
-                <small class="text-muted">Total Gross: ₱{{ number_format($payrolls->sum('gross_pay'), 2) }} | Total Net: ₱{{ number_format($payrolls->sum(function($p) { return $p->gross_pay - $p->total_deductions; }), 2) }}</small>
+                <small class="text-muted">Total Gross: ₱{{ number_format($payrolls->sum('gross_pay'), 2) }} | Total Net: ₱{{ number_format($payrolls->sum(function($p) { return $p->net_pay ?? ($p->gross_pay - ($p->total_deductions ?? 0)); }), 2) }} | Total Deductions: ₱{{ number_format($payrolls->sum(function($p) { return $p->total_deductions ?? 0; }), 2) }}</small>
             </div>
             <div class="table-responsive">
                 <table class="table table-striped">
@@ -66,11 +66,11 @@
                         <tr>
                             <th><input type="checkbox" id="masterCheck"></th>
                             <th>Employee</th>
-                            <th>Hourly Rate</th>
-                            <th>Total Hours</th>
+                            <th class="text-success fw-bold">Net Pay</th>
                             <th>Gross Pay</th>
                             <th>Deductions</th>
-                            <th>Net Pay</th>
+                            <th>Total Hours</th>
+                            <th>Hourly Rate</th>
                             <th>Status</th>
                             <th>Pay Date</th>
                             <th>Actions</th>
@@ -85,18 +85,31 @@
                             @endif
                         </td>
                         <td>{{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}</td>
+                        <td class="text-success">
+                            @if($payroll->status == 'pending')
+                                <span class="text-success fw-bold fs-5">₱{{ number_format($payroll->net_pay ?? ($payroll->gross_pay - ($payroll->total_deductions ?? 0)), 2) }}</span>
+                                <small class="text-muted d-block">Live</small>
+                            @else
+                                <span class="text-success fw-bold fs-5">₱{{ number_format($payroll->net_pay ?? ($payroll->gross_pay - ($payroll->total_deductions ?? 0)), 2) }}</span>
+                            @endif
+                        </td>
                         <td>
                             @if($payroll->status == 'pending')
-                                @php
-                                    $currentRate = $payroll->employee->hourly_rate ?? $payroll->hourly_rate ?? 100;
-                                @endphp
-                                <button class="btn btn-link p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#editRateModal"
-                                        data-id="{{ $payroll->employee->id }}" data-name="{{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}"
-                                        data-rate="{{ $currentRate }}">
-                                    ₱{{ number_format($currentRate, 2) }}
+                                <span class="text-primary fw-bold">₱{{ number_format($payroll->gross_pay, 2) }}</span>
+                                <small class="text-muted d-block">Live</small>
+                            @else
+                                ₱{{ number_format($payroll->gross_pay, 2) }}
+                            @endif
+                        </td>
+                        <td>
+                            @if(($payroll->total_deductions ?? 0) > 0)
+                                <button type="button" class="btn btn-link p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#deductionHistoryModal"
+                                        data-payroll-id="{{ $payroll->id }}" data-employee-name="{{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}"
+                                        data-payroll-status="{{ $payroll->status }}">
+                                    ₱{{ number_format($payroll->total_deductions ?? 0, 2) }}
                                 </button>
                             @else
-                                <span class="text-muted">₱{{ number_format($payroll->hourly_rate, 2) }}</span>
+                                ₱0.00
                             @endif
                         </td>
                         <td>
@@ -113,31 +126,16 @@
                         </td>
                         <td>
                             @if($payroll->status == 'pending')
-                                <span class="text-primary fw-bold">₱{{ number_format($payroll->gross_pay, 2) }}</span>
-                                <small class="text-muted d-block">Live</small>
-                            @else
-                                ₱{{ number_format($payroll->gross_pay, 2) }}
-                            @endif
-                        </td>
-                        <td>
-                            @if($payroll->total_deductions > 0)
-                                <button type="button" class="btn btn-link p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#deductionHistoryModal"
-                                        data-payroll-id="{{ $payroll->id }}" data-employee-name="{{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}">
-                                    ₱{{ number_format($payroll->total_deductions, 2) }}
+                                @php
+                                    $currentRate = $payroll->employee->hourly_rate ?? $payroll->hourly_rate ?? 100;
+                                @endphp
+                                <button class="btn btn-link p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#editRateModal"
+                                        data-id="{{ $payroll->employee->id }}" data-name="{{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}"
+                                        data-rate="{{ $currentRate }}">
+                                    ₱{{ number_format($currentRate, 2) }}
                                 </button>
                             @else
-                                ₱0.00
-                            @endif
-                        </td>
-                        <td>
-                            @php
-                                $netPay = $payroll->gross_pay - $payroll->total_deductions;
-                            @endphp
-                            @if($payroll->status == 'pending')
-                                <span class="text-primary fw-bold">₱{{ number_format($netPay, 2) }}</span>
-                                <small class="text-muted d-block">Live</small>
-                            @else
-                                ₱{{ number_format($netPay, 2) }}
+                                <span class="text-muted">₱{{ number_format($payroll->hourly_rate, 2) }}</span>
                             @endif
                         </td>
                         <td>

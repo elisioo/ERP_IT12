@@ -63,12 +63,14 @@ class PayrollController extends Controller
                 $hourlyRate = $employee->hourly_rate ?? 100;
                 $grossPay = $totalHours * $hourlyRate;
 
-                Payroll::create([
+                $payroll = Payroll::create([
                     'employee_id' => $employee->id,
                     'period' => $month,
                     'total_hours' => $totalHours,
                     'hourly_rate' => $hourlyRate,
                     'gross_pay' => $grossPay,
+                    'total_deductions' => 0,
+                    'net_pay' => $grossPay,
                     'status' => 'pending'
                 ]);
             } elseif ($existingPayroll->status === 'pending' && $employee->hourly_rate && $existingPayroll->hourly_rate != $employee->hourly_rate) {
@@ -77,10 +79,13 @@ class PayrollController extends Controller
                 $hourlyRate = $employee->hourly_rate;
                 $grossPay = $totalHours * $hourlyRate;
                 
+                $totalDeductions = $existingPayroll->deductions()->sum('amount');
                 $existingPayroll->update([
                     'total_hours' => $totalHours,
                     'hourly_rate' => $hourlyRate,
-                    'gross_pay' => $grossPay
+                    'gross_pay' => $grossPay,
+                    'total_deductions' => $totalDeductions,
+                    'net_pay' => $grossPay - $totalDeductions
                 ]);
             }
         }
@@ -109,10 +114,13 @@ class PayrollController extends Controller
 
             if ($payroll) {
                 if ($payroll->status === 'pending') {
+                    $totalDeductions = $payroll->deductions()->sum('amount');
                     $payroll->update([
                         'total_hours' => $totalHours,
                         'hourly_rate' => $hourlyRate,
                         'gross_pay' => $grossPay,
+                        'total_deductions' => $totalDeductions,
+                        'net_pay' => $grossPay - $totalDeductions,
                         'status' => $autoPay ? 'paid' : 'pending',
                         'pay_date' => $autoPay ? now() : null
                     ]);
@@ -125,6 +133,8 @@ class PayrollController extends Controller
                     'total_hours' => $totalHours,
                     'hourly_rate' => $hourlyRate,
                     'gross_pay' => $grossPay,
+                    'total_deductions' => 0,
+                    'net_pay' => $grossPay,
                     'status' => $autoPay ? 'paid' : 'pending',
                     'pay_date' => $autoPay ? now() : null
                 ]);
@@ -159,10 +169,13 @@ class PayrollController extends Controller
         $currentRate = $payroll->employee->hourly_rate ?? $payroll->hourly_rate ?? 100;
         $grossPay = $currentHours * $currentRate;
         
+        $totalDeductions = $payroll->deductions()->sum('amount');
         $payroll->update([
             'total_hours' => $currentHours,
             'hourly_rate' => $currentRate,
             'gross_pay' => $grossPay,
+            'total_deductions' => $totalDeductions,
+            'net_pay' => $grossPay - $totalDeductions,
             'status' => 'paid', 
             'pay_date' => now()
         ]);
@@ -203,10 +216,13 @@ class PayrollController extends Controller
             $currentRate = $payroll->employee->hourly_rate ?? $payroll->hourly_rate ?? 100;
             $grossPay = $currentHours * $currentRate;
             
+            $totalDeductions = $payroll->deductions()->sum('amount');
             $payroll->update([
                 'total_hours' => $currentHours,
                 'hourly_rate' => $currentRate,
                 'gross_pay' => $grossPay,
+                'total_deductions' => $totalDeductions,
+                'net_pay' => $grossPay - $totalDeductions,
                 'status' => 'paid',
                 'pay_date' => now()
             ]);
@@ -286,6 +302,14 @@ class PayrollController extends Controller
             'amount' => $amount
         ]);
 
+        // Update payroll totals
+        $payroll = Payroll::findOrFail($request->payroll_id);
+        $totalDeductions = $payroll->deductions()->sum('amount');
+        $payroll->update([
+            'total_deductions' => $totalDeductions,
+            'net_pay' => $payroll->gross_pay - $totalDeductions
+        ]);
+
         return redirect()->back()->with('success', 'Deduction added successfully!');
     }
 
@@ -302,7 +326,16 @@ class PayrollController extends Controller
     public function deleteDeduction($id)
     {
         $deduction = Deduction::findOrFail($id);
+        $payrollId = $deduction->payroll_id;
         $deduction->delete();
+        
+        // Update payroll totals
+        $payroll = Payroll::findOrFail($payrollId);
+        $totalDeductions = $payroll->deductions()->sum('amount');
+        $payroll->update([
+            'total_deductions' => $totalDeductions,
+            'net_pay' => $payroll->gross_pay - $totalDeductions
+        ]);
         
         return response()->json(['success' => true]);
     }

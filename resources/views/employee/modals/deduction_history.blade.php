@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.matches('[data-bs-target="#deductionHistoryModal"]')) {
             const payrollId = e.target.dataset.payrollId;
             const employeeName = e.target.dataset.employeeName;
+            const payrollStatus = e.target.dataset.payrollStatus;
             
             document.getElementById('historyEmployeeName').textContent = employeeName;
             
@@ -53,16 +54,18 @@ document.addEventListener('DOMContentLoaded', function() {
                             details = deduction.reason;
                         }
                         
+                        const removeButton = payrollStatus === 'paid' ? 
+                            '<span class="text-muted">Paid</span>' : 
+                            `<button class="btn btn-sm btn-danger" onclick="removeDeduction(${deduction.id})" title="Remove deduction">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>`;
+                        
                         html += `<tr>
                             <td><span class="badge ${deduction.type === 'late' ? 'bg-warning' : 'bg-danger'}">${deduction.type}</span></td>
                             <td>${details}</td>
                             <td>₱${parseFloat(deduction.amount).toFixed(2)}</td>
                             <td>${new Date(deduction.created_at).toLocaleDateString()}</td>
-                            <td>
-                                <button class="btn btn-sm btn-danger" onclick="removeDeduction(${deduction.id})" title="Remove deduction">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </td>
+                            <td>${removeButton}</td>
                         </tr>`;
                     });
                     

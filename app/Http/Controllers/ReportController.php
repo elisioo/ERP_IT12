@@ -16,7 +16,7 @@ class ReportController extends Controller
         // Employee Analytics
         $totalEmployees = Employee::active()->count();
         $totalAttendanceToday = Attendance::whereDate('date', today())->count();
-        
+
         // Weekly Attendance Trend
         $weeklyAttendance = Attendance::selectRaw('DATE(date) as date, COUNT(*) as count')
             ->where('date', '>=', now()->subDays(7))
@@ -31,14 +31,14 @@ class ReportController extends Controller
         ];
 
         // Monthly Payroll Summary
-        $monthlyPayroll = Payroll::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(gross_pay) as total')
+        $monthlyPayroll = Payroll::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(net_pay) as total')
             ->where('created_at', '>=', now()->subMonths(6))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
         return view('employee.reports', compact(
-            'totalEmployees', 'totalAttendanceToday', 'weeklyAttendance', 
+            'totalEmployees', 'totalAttendanceToday', 'weeklyAttendance',
             'employeeStatus', 'monthlyPayroll'
         ));
     }
@@ -59,29 +59,11 @@ class ReportController extends Controller
     public function payroll(Request $request)
     {
         $period = $request->input('period', now()->format('Y-m'));
-        $employees = Employee::active()->with(['attendances' => function($q) use ($period) {
-            $q->whereYear('date', Carbon::parse($period)->year)
-              ->whereMonth('date', Carbon::parse($period)->month);
-        }])->get();
 
-        $payrolls = collect();
-        foreach ($employees as $employee) {
-            $totalHours = $this->calculateTotalHours($employee->attendances);
-            $hourlyRate = $employee->hourly_rate ?? 100;
-            $grossPay = $totalHours * $hourlyRate;
-            $savedPayroll = Payroll::where('employee_id', $employee->id)
-                                  ->where('period', $period)
-                                  ->first();
-
-            $payrolls->push((object)[
-                'employee' => $employee,
-                'total_hours' => $totalHours,
-                'hourly_rate' => $hourlyRate,
-                'gross_pay' => $grossPay,
-                'status' => $savedPayroll->status ?? 'pending',
-                'pay_date' => $savedPayroll->pay_date ?? null
-            ]);
-        }
+        $payrolls = Payroll::with('employee')
+            ->where('period', $period)
+            ->orderBy('gross_pay', 'desc')
+            ->get();
 
         $totalGrossPay = $payrolls->sum('gross_pay');
         $totalHours = $payrolls->sum('total_hours');
@@ -137,5 +119,50 @@ class ReportController extends Controller
 
         $pdf = Pdf::loadView('employee.reports.pdf.payroll', compact('payrolls', 'period', 'totalGrossPay', 'totalHours'));
         return $pdf->download('payroll-report-' . $period . '.pdf');
+    }
+
+    public function employeePayroll($employeeId, Request $request)
+    {
+        $period = $request->input('period', now()->format('Y-m'));
+
+        $employee = Employee::findOrFail($employeeId);
+
+        $payrolls = Payroll::with('employee', 'deductions')
+            ->where('employee_id', $employeeId)
+            ->where('period', $period)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $totalGrossPay = $payrolls->sum('gross_pay');
+        $totalDeductions = $payrolls->sum('total_deductions');
+        $totalNetPay = $payrolls->sum('net_pay');
+        $totalHours = $payrolls->sum('total_hours');
+
+        return view('employee.reports.employee_payroll', compact(
+            'employee', 'payrolls', 'period', 'totalGrossPay', 'totalDeductions', 'totalNetPay', 'totalHours'
+        ));
+    }
+
+    public function employeePayrollPdf($employeeId, Request $request)
+    {
+        $period = $request->input('period', now()->format('Y-m'));
+
+        $employee = Employee::findOrFail($employeeId);
+
+        $payrolls = Payroll::with('employee', 'deductions')
+            ->where('employee_id', $employeeId)
+            ->where('period', $period)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $totalGrossPay = $payrolls->sum('gross_pay');
+        $totalDeductions = $payrolls->sum('total_deductions');
+        $totalNetPay = $payrolls->sum('net_pay');
+        $totalHours = $payrolls->sum('total_hours');
+
+        $pdf = Pdf::loadView('employee.reports.pdf.employee_payroll', compact(
+            'employee', 'payrolls', 'period', 'totalGrossPay', 'totalDeductions', 'totalNetPay', 'totalHours'
+        ));
+        return $pdf->download('payroll-report-' . $employee->first_name . '-' . $employee->last_name . '-' . $period . '.pdf');
     }
 }

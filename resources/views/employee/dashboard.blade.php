@@ -70,7 +70,7 @@
                 <div class="stats-card text-white bg-success">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <h6 class="mb-1 opacity-75">Total Salary</h6>
+                            <h6 class="mb-1 opacity-75">Total Net Pay</h6>
                             <h2 class="stat-number mb-0">₱{{ number_format($totalSalary, 0) }}</h2>
                         </div>
                         <div class="text-end">

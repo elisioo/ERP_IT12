@@ -36,7 +36,7 @@
 
     <!-- Summary Stats -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card text-center">
                 <div class="card-body">
                     <h3 class="text-primary">{{ $payrolls->count() }}</h3>
@@ -44,7 +44,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card text-center">
                 <div class="card-body">
                     <h3 class="text-info">{{ number_format($totalHours, 1) }}</h3>
@@ -60,11 +60,19 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-danger">₱{{ number_format($payrolls->sum('total_deductions'), 2) }}</h3>
+                    <small class="text-muted">Total Deductions</small>
+                </div>
+            </div>
+        </div>
         <div class="col-md-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <h3 class="text-warning">{{ $payrolls->where('status', 'paid')->count() }}</h3>
-                    <small class="text-muted">Paid</small>
+                    <h3 class="text-success fw-bold">₱{{ number_format($payrolls->sum('net_pay'), 2) }}</h3>
+                    <small class="text-muted">Total Net Pay</small>
                 </div>
             </div>
         </div>
@@ -78,9 +86,11 @@
                     <thead class="table-dark">
                         <tr>
                             <th>Employee</th>
-                            <th>Hourly Rate</th>
-                            <th>Total Hours</th>
+                            <th class="text-success fw-bold">Net Pay</th>
                             <th>Gross Pay</th>
+                            <th>Deductions</th>
+                            <th>Total Hours</th>
+                            <th>Hourly Rate</th>
                             <th>Status</th>
                             <th>Pay Date</th>
                         </tr>
@@ -88,10 +98,16 @@
                     <tbody>
                         @forelse($payrolls as $payroll)
                         <tr>
-                            <td>{{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}</td>
-                            <td>₱{{ number_format($payroll->hourly_rate, 2) }}</td>
-                            <td>{{ $payroll->total_hours }} hrs</td>
+                            <td>
+                                <a href="{{ route('reports.employee.payroll', ['employeeId' => $payroll->employee->id, 'period' => $period]) }}" class="text-decoration-none">
+                                    {{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}
+                                </a>
+                            </td>
+                            <td class="text-success fw-bold fs-5">₱{{ number_format($payroll->net_pay, 2) }}</td>
                             <td>₱{{ number_format($payroll->gross_pay, 2) }}</td>
+                            <td class="text-danger">₱{{ number_format($payroll->total_deductions, 2) }}</td>
+                            <td>{{ $payroll->total_hours }} hrs</td>
+                            <td>₱{{ number_format($payroll->hourly_rate, 2) }}</td>
                             <td>
                                 <span class="badge {{ $payroll->status == 'paid' ? 'bg-success' : 'bg-warning' }}">
                                     {{ ucfirst($payroll->status) }}
@@ -101,7 +117,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted">No payroll records found for this period</td>
+                            <td colspan="8" class="text-center text-muted">No payroll records found for this period</td>
                         </tr>
                         @endforelse
                     </tbody>

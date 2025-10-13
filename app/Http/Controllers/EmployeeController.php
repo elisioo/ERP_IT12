@@ -52,7 +52,7 @@ class EmployeeController extends Controller
         $currentMonth = now()->format('Y-m');
         $totalSalary = Payroll::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
-            ->sum('gross_pay');
+            ->sum('net_pay');
         
         // If no payroll data, calculate from attendance and hourly rates
         if ($totalSalary == 0) {

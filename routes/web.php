@@ -27,7 +27,7 @@ Route::middleware('admin.auth')->group(function () {
     Route::get('/', function () {
         return view('menu');
     })->name('menu');
-    
+
 Route::post('/terms/accept', [\App\Http\Controllers\AuthController::class, 'acceptTerms'])->name('terms.accept');
 
 Route::get('/dashboard', [InventoryDashboardController::class, 'index'])->name('dashboard.index');
@@ -131,7 +131,7 @@ Route::get('/debug/attendance', function() {
         $q->whereYear('date', \Carbon\Carbon::parse($month)->year)
           ->whereMonth('date', \Carbon\Carbon::parse($month)->month);
     }])->get();
-    
+
     $debug = [];
     foreach ($employees as $employee) {
         $debug[] = [
@@ -140,15 +140,17 @@ Route::get('/debug/attendance', function() {
             'attendances' => $employee->attendances->toArray()
         ];
     }
-    
+
     return response()->json(['month' => $month, 'data' => $debug]);
 });
 
 Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
 Route::get('/reports/attendance', [\App\Http\Controllers\ReportController::class, 'attendance'])->name('reports.attendance');
 Route::get('/reports/payroll', [\App\Http\Controllers\ReportController::class, 'payroll'])->name('reports.payroll');
+Route::get('/reports/employee/{employeeId}/payroll', [\App\Http\Controllers\ReportController::class, 'employeePayroll'])->name('reports.employee.payroll');
 Route::get('/reports/attendance/pdf', [\App\Http\Controllers\ReportController::class, 'attendancePdf'])->name('reports.attendance.pdf');
 Route::get('/reports/payroll/pdf', [\App\Http\Controllers\ReportController::class, 'payrollPdf'])->name('reports.payroll.pdf');
+Route::get('/reports/employee/{employeeId}/payroll/pdf', [\App\Http\Controllers\ReportController::class, 'employeePayrollPdf'])->name('reports.employee.payroll.pdf');
 Route::post('/settings/update', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
 });
 Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->name('attendance.update');

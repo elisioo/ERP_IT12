@@ -8,7 +8,7 @@ class Payroll extends Model
 {
     protected $fillable = [
         'employee_id', 'period', 'total_hours', 'hourly_rate', 
-        'gross_pay', 'status', 'pay_date'
+        'gross_pay', 'total_deductions', 'net_pay', 'status', 'pay_date'
     ];
 
     protected $casts = [
