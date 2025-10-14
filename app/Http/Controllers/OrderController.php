@@ -88,9 +88,6 @@ class OrderController extends Controller
             ->orderBy('deleted_at', 'desc')
             ->paginate(5);
 
-        $stockStatus = $this->getStockStatus();
-        $stockAlert = $this->generateStockAlert();
-
         return view('inventory.order', compact(
             'orderss',
             'summary',
@@ -102,9 +99,7 @@ class OrderController extends Controller
             'status',
             'search',
             'sort',
-            'archivedOrders',
-            'stockStatus',
-            'stockAlert'
+            'archivedOrders'
         ), ['page' => 'orders']);
 
     }
@@ -224,7 +219,7 @@ class OrderController extends Controller
         return view('inventory.editOrders', compact('order', 'menus'), ['page' => 'orders']);
     }
 
-    public function update(Request $request, Order $order)
+   public function update(Request $request, Order $order)
     {
         $request->validate([
             'customer_name' => 'required|string|max:255',
@@ -237,14 +232,14 @@ class OrderController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1) Restore inventory from existing order lines
+            //  Restore inventory from existing order lines before making updates
             foreach ($order->lines as $line) {
                 $menu = Menu::with('inventory')->find($line->menu_id);
                 if ($menu && $menu->inventory) {
                     $menu->inventory->quantity += $line->quantity;
                     $menu->inventory->save();
 
-                    // After restore, mark menu available if qty > 0
+                    // Mark menu as available again if it now has stock
                     if ($menu->inventory->quantity > 0 && !$menu->is_available) {
                         $menu->is_available = true;
                         $menu->save();
@@ -252,14 +247,30 @@ class OrderController extends Controller
                 }
             }
 
-            // 2) Remove old order lines
+            //  If the order is being canceled — stop here and keep items restored
+            if ($request->status === 'canceled') {
+                $order->update([
+                    'customer_name' => $request->customer_name,
+                    'order_date'    => $request->order_date,
+                    'status'        => 'canceled',
+                    'total_amount'  => 0, // No total for canceled order
+                ]);
+
+                // Delete all order lines since the order is canceled
+                $order->lines()->delete();
+
+                DB::commit();
+                return redirect()->route('orders.index')->with('success', 'Order has been canceled and inventory restored.');
+            }
+
+            //  If not canceled, continue normal update flow
             $order->lines()->delete();
 
-            // 3) Validate requested quantities against current inventory AFTER restore
             $items = $request->items ?? [];
             foreach ($items as $item) {
                 $menu = Menu::with('inventory')->find($item['menu_id']);
                 $availableQty = $menu->inventory->quantity ?? 0;
+
                 if ($item['quantity'] > $availableQty) {
                     DB::rollBack();
                     return redirect()->back()
@@ -268,7 +279,7 @@ class OrderController extends Controller
                 }
             }
 
-            // 4) Recreate order lines and deduct inventory
+            // Recreate order lines and deduct inventory again
             $total = 0;
             foreach ($items as $item) {
                 $menu = Menu::with('inventory')->findOrFail($item['menu_id']);
@@ -282,20 +293,18 @@ class OrderController extends Controller
                     'price'    => $lineTotal,
                 ]);
 
-                // Deduct inventory
+                // Deduct from inventory again
                 if ($menu->inventory) {
                     $menu->inventory->quantity = max(0, $menu->inventory->quantity - $qty);
                     $menu->inventory->save();
 
-                    // Update menu availability
+                    // Update availability based on remaining stock
                     if ($menu->inventory->quantity <= 0) {
                         $menu->is_available = false;
                         $menu->save();
-                    } else {
-                        if (!$menu->is_available) {
-                            $menu->is_available = true;
-                            $menu->save();
-                        }
+                    } elseif (!$menu->is_available) {
+                        $menu->is_available = true;
+                        $menu->save();
                     }
                 } else {
                     throw new \Exception("Inventory record missing for menu ID {$menu->id}");
@@ -303,10 +312,13 @@ class OrderController extends Controller
 
                 $total += $lineTotal;
             }
-
-            // 5) Update order base fields and total
-            $order->update($request->only(['customer_name', 'order_date', 'status']));
-            $order->update(['total_amount' => $total]);
+            // Update order details and total amount
+            $order->update([
+                'customer_name' => $request->customer_name,
+                'order_date'    => $request->order_date,
+                'status'        => $request->status,
+                'total_amount'  => $total,
+            ]);
 
             DB::commit();
             return redirect()->route('orders.index')->with('success', 'Order updated successfully!');
@@ -315,6 +327,7 @@ class OrderController extends Controller
             return redirect()->back()->withInput()->with('error', 'Failed to update order: ' . $e->getMessage());
         }
     }
+
 
 
     // Archive (Soft Delete) single order
@@ -371,20 +384,37 @@ class OrderController extends Controller
         return redirect()->back()->with('success', 'Order restored successfully.');
     }
 
-    public function forceDelete(Request $request)
+    public function forceDelete(Request $request, $id = null)
     {
-        $ids = $request->input('ids', []);
-        if (empty($ids)) {
-            return redirect()->back()->with('error', 'No orders selected to permanently delete.');
+        try {
+            // Handle single delete (from button)
+            if ($id) {
+                $order = Order::onlyTrashed()->find($id);
+
+                if (!$order) {
+                    return redirect()->back()->with('error', 'Order not found or already deleted.');
+                }
+
+                $order->forceDelete();
+                return redirect()->back()->with('success', 'Order permanently deleted.');
+            }
+
+            // Handle multiple delete (from checkboxes)
+            $ids = $request->input('ids', []);
+            if (empty($ids)) {
+                return redirect()->back()->with('error', 'No orders selected to permanently delete.');
+            }
+
+            DB::transaction(function () use ($ids) {
+                Order::onlyTrashed()->whereIn('id', $ids)->forceDelete();
+            });
+
+            return redirect()->back()->with('success', 'Selected orders permanently deleted.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'An unexpected error occurred: ' . $e->getMessage());
         }
-
-        DB::transaction(function () use ($ids) {
-            Order::onlyTrashed()->whereIn('id', $ids)->forceDelete();
-        });
-
-        return redirect()->back()->with('success', 'Selected orders have been permanently deleted.');
     }
-   
+
 
     public function analytics(Request $request)
     {
@@ -413,56 +443,5 @@ class OrderController extends Controller
 
         return $pdf->stream('Invoice_'.$order->order_number.'.pdf');
     }
-    private function getStockStatus()
-    {
-        $threshold = 10;
 
-        // Count all inventory items below and above threshold
-        $totalLowStock = Inventory::where('quantity', '<', $threshold)->count();
-        $restockedLowStock = Inventory::where('quantity', '>=', $threshold)->count();
-
-        $totalItems = $totalLowStock + $restockedLowStock;
-
-        if ($totalItems === 0) {
-            return [
-                'percentage' => 100,
-                'text' => 'No inventory data available',
-            ];
-        }
-
-        $percentage = round(($restockedLowStock / $totalItems) * 100, 0);
-
-        return [
-            'percentage' => $percentage,
-            'text' => "{$percentage}% of low-stock items restocked",
-        ];
-    }
-
-/**
- * Generate alert for low-stock inventory
- */
-    private function generateStockAlert()
-    {
-        $threshold = 10;
-
-        // Get low-stock inventories with menu relationship
-        $lowStockMenus = Inventory::with('menu')
-            ->where('quantity', '<', $threshold)
-            ->orderBy('quantity', 'asc')
-            ->take(3)
-            ->get();
-
-        if ($lowStockMenus->isEmpty()) {
-            return null;
-        }
-
-        // Collect menu names or fallback text if null
-        $menuNames = $lowStockMenus->map(function ($inv) {
-            return $inv->menu->menu_name ?? 'Not available';
-        });
-
-        $itemList = $menuNames->join(', ');
-
-        return "Low stock alert: {$itemList} need to be reordered soon!";
-    }
 }

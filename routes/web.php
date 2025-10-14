@@ -78,8 +78,8 @@ Route::prefix('menus')->group(function () {
     Route::delete('/{menu}', [MenuController::class, 'destroy'])->name('menus.destroy');
     Route::post('/{menu}/rate', [MenuController::class, 'rate'])->name('menus.rate');
     Route::get('/archived', [MenuController::class, 'archived'])->name('menus.archived');
-    Route::post('/{id}/restore', [MenuController::class, 'restore'])->name('menus.restore');
-    Route::delete('/{id}/force-delete', [MenuController::class, 'forceDelete'])->name('menus.forceDelete');
+    Route::post('/menus/{id}/restore', [MenuController::class, 'restore'])->name('menus.restore');
+    Route::delete('/menus/{id}/force-delete', [MenuController::class, 'forceDelete'])->name('menus.forceDelete');
 });
 
 
@@ -94,6 +94,7 @@ Route::prefix('orders')->group(function () {
     Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::put('/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::delete('/{order}/force-delete', [OrderController::class, 'forceDelete'])->name('orders.forceDelete');
+    Route::delete('/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
 
     // Archive management
 

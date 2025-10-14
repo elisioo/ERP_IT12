@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
             <h5 class="fw-bold h5">Order Management</h5>
-            <small class="text-muted">Manage your orders efficiently</small>
+            <small class="text-muted">Manage your orders efficiently.</small>
         </div>
 
         <div class="d-flex gap-2">
@@ -165,9 +165,11 @@
                                     <td>{{ $order->order_number }}</td>
                                     <td>{{ $order->customer_name }}</td>
                                     <td>
-                                        @foreach($order->lines as $line)
-                                        {{ $line->menu->menu_name ?? 'Not available'}} (x{{ $line->quantity }})<br>
-                                        @endforeach
+                                        @forelse($order->lines as $line)
+                                        {{ $line->menu->menu_name ?? 'Not available' }} (x{{ $line->quantity }})<br>
+                                        @empty
+                                        Cancelled
+                                        @endforelse
                                     </td>
                                     <td>₱{{ number_format($order->total_amount, 2) }}</td>
                                     <td>
@@ -306,10 +308,26 @@
                                     <span class="badge bg-secondary">Archived</span>
                                 </td>
                                 <td>
-                                    <form action="{{ route('orders.restore', $order->id) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-success btn-sm">Restore</button>
-                                    </form>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <form action="{{ route('orders.restore', $order->id) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fa-solid fa-rotate-left"></i> Restore
+                                            </button>
+                                        </form>
+
+                                        <form action="{{ route('orders.forceDelete', $order->id) }}" method="POST"
+                                            class="">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm "
+                                                onclick="return confirm('Are you sure you want to permanently delete this order? This action cannot be undone.');">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+
+                                    </div>
+
 
                                 </td>
                             </tr>

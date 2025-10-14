@@ -9,8 +9,34 @@
             <i class="fa-solid fa-right-from-bracket"></i> Back to Orders
         </a>
     </div>
+    <!-- Flash Messages -->
+    @if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-check"></i> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
 
-    <!-- Edit Order Form -->
+    @if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-triangle-exclamation"></i> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
+    @if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong><i class="fa-solid fa-circle-exclamation"></i> Please fix the following errors:</strong>
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
+    <!-- Edit Order F   orm -->
     <form method="POST" action="{{ route('orders.update', $order->id) }}">
         @csrf
         @method('PUT')
@@ -23,7 +49,7 @@
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Order Number</label>
                         <input type="text" name="order_number" class="form-control" value="{{ $order->order_number }}"
-                            required>
+                            readonly>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Customer Name</label>
@@ -43,7 +69,7 @@
                             </option>
                             <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>Completed
                             </option>
-                            <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled
+                            <option value="canceled" {{ $order->status == 'canceled' ? 'selected' : '' }}>Canceled
                             </option>
                         </select>
                     </div>
