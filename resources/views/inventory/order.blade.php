@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
             <h5 class="fw-bold h5">Order Management</h5>
-            <small class="text-muted">Manage your orders efficiently</small>
+            <small class="text-muted">Manage your orders efficiently.</small>
         </div>
 
         <div class="d-flex gap-2">
