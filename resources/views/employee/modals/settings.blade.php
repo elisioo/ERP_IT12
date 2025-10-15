@@ -8,7 +8,6 @@
             <div class="modal-body">
                 <form id="settingsForm">
                     @csrf
-                    <!-- Theme -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Theme</label>
                         <div>
@@ -123,6 +122,7 @@
                             <input class="form-check-input" type="checkbox" id="optimizeToggle">
                             <label class="form-check-label" for="optimizeToggle">Optimize for performance</label>
                         </div>
+                        <small class="text-muted">Enabling this will improve icon rendering and reduce blurriness</small>
                     </div>
                 </form>
             </div>

@@ -16,8 +16,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Auto-refresh every minute for real-time calculations
+    // Auto-refresh every minute for real-time calculations (skip loading screen)
     setInterval(function() {
+        // Hide loading screen before reload and prevent it from showing again
+        const loadingScreen = document.getElementById('loadingScreen');
+        if (loadingScreen) {
+            loadingScreen.style.display = 'none';
+            loadingScreen.style.opacity = '0';
+            // Add a class to prevent loading screen from showing on page load
+            document.body.classList.add('skip-loading-screen');
+        }
         location.reload();
     }, 60000);
 

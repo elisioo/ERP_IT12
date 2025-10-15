@@ -21,8 +21,18 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Apply settings immediately without page refresh
                 applySettings();
-                bootstrap.Modal.getInstance(document.getElementById('settingsModal')).hide();
+
+                // Force a brief reflow to ensure all changes are rendered
+                document.body.style.display = 'none';
+                document.body.offsetHeight; // Trigger reflow
+                document.body.style.display = '';
+
+                // Close modal after a short delay to ensure settings are applied
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('settingsModal')).hide();
+                }, 100);
             }
         });
     });
@@ -106,6 +116,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Apply optimization
         document.body.setAttribute('data-optimize', optimize ? 'enabled' : 'disabled');
+
+        // Force icon re-rendering when optimization changes
+        if (optimize) {
+            // Trigger a reflow to apply new rendering rules
+            document.body.style.display = 'none';
+            document.body.offsetHeight; // Trigger reflow
+            document.body.style.display = '';
+        }
 
         // Save to localStorage
         localStorage.setItem('userSettings', JSON.stringify({

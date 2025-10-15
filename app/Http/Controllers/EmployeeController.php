@@ -15,16 +15,16 @@ class EmployeeController extends Controller
     {
         $today = now()->toDateString();
         $employees = Employee::active()->get();
-        
+
         // Get today's attendance
         $todayAttendance = Attendance::where('date', $today)
             ->whereIn('employee_id', $employees->pluck('id'))
             ->get();
-            
+
         $totalEmployees = $employees->count();
         $presentCount = $todayAttendance->whereNotNull('time_in')->count();
         $absentCount = $totalEmployees - $presentCount;
-        
+
         // Calculate total hours for current month
         $totalHours = Attendance::whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
@@ -40,7 +40,7 @@ class EmployeeController extends Controller
                     return 0;
                 }
             });
-            
+
         $dashboardData = [
             'totalEmployees' => $totalEmployees,
             'presentCount' => $presentCount,
@@ -53,7 +53,7 @@ class EmployeeController extends Controller
         $totalSalary = Payroll::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->sum('net_pay');
-        
+
         // If no payroll data, calculate from attendance and hourly rates
         if ($totalSalary == 0) {
             $totalSalary = Employee::active()
@@ -81,10 +81,10 @@ class EmployeeController extends Controller
         $recentEmployees = Employee::active()->latest()->take(5)->get();
         $employeeHours = [
             'today' => $this->getEmployeeHours('today'),
-            'week' => $this->getEmployeeHours('week'), 
+            'week' => $this->getEmployeeHours('week'),
             'month' => $this->getEmployeeHours('month')
         ];
-        
+
         $monthlyData = [
             'totalSalary' => $totalSalary,
             'recentEmployees' => $recentEmployees,
@@ -102,19 +102,20 @@ class EmployeeController extends Controller
             $dashboardData['totalEmployees']
         );
 
-        return view('employee.dashboard', array_merge(
+        $data = array_merge(
             $dashboardData,
             $monthlyData,
             ['recentActivities' => $recentActivities, 'notice' => $notice, 'allEmployees' => $employees]
-        ));
-    }
+        );
 
+        return view('employee.dashboard', $data);
+    }
     private function getEmployeeHours($period = 'month')
     {
         $employees = Employee::active()->get();
-        
+
         $query = Attendance::whereNotNull('time_in')->whereNotNull('time_out');
-        
+
         switch($period) {
             case 'today':
                 $query->whereDate('date', now()->toDateString());
@@ -127,21 +128,21 @@ class EmployeeController extends Controller
                 $query->whereMonth('date', now()->month)->whereYear('date', now()->year);
                 break;
         }
-        
+
         $attendances = $query->get()->groupBy('employee_id');
-            
+
         return $employees->map(function($employee) use ($attendances) {
             $employeeAttendances = $attendances->get($employee->id, collect());
-            
+
             $totalHours = $employeeAttendances->sum(function($attendance) {
                 try {
                     if (!$attendance->time_in || !$attendance->time_out) {
                         return 0;
                     }
-                    
+
                     $timeIn = \Carbon\Carbon::parse($attendance->time_in);
                     $timeOut = \Carbon\Carbon::parse($attendance->time_out);
-                    
+
                     // Handle same day calculation
                     $hours = $timeOut->diffInMinutes($timeIn) / 60;
                     return $hours > 0 ? $hours : 0;
