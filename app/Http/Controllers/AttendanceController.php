@@ -21,7 +21,8 @@ class AttendanceController extends Controller
         }])
         ->orderBy('first_name', 'asc')
         ->orderBy('last_name', 'asc')
-        ->get();
+        ->paginate(10)
+        ->withQueryString();
 
         $allEmployees = Employee::orderBy('first_name', 'asc')
         ->orderBy('last_name', 'asc')
@@ -107,7 +108,7 @@ class AttendanceController extends Controller
         $today = now()->toDateString();
         $currentTime = now()->format('H:i');
         $displayTime = now()->format('g:i A');
-        
+
         $attendance = Attendance::where('employee_id', $id)
             ->where('date', $today)
             ->first();
@@ -120,7 +121,7 @@ class AttendanceController extends Controller
                 'time_in' => $currentTime,
                 'time_out' => null
             ]);
-            
+
             return response()->json([
                 'success' => true,
                 'action' => 'time_in',
@@ -133,7 +134,7 @@ class AttendanceController extends Controller
                 'time_out' => $currentTime,
                 'timeout_type' => 'manual'
             ]);
-            
+
             return response()->json([
                 'success' => true,
                 'action' => 'time_out',
@@ -196,7 +197,7 @@ class AttendanceController extends Controller
 
         $today = now()->toDateString();
         $timeoutTime = $request->timeout_time;
-        
+
         if ($request->timeout_option === 'immediate') {
             $updated = $this->executeTimeouts($request->employee_ids, $timeoutTime, $today, 'auto_immediate');
             return redirect()->back()->with('success', "Auto time-out set for {$updated} employees at {$timeoutTime}.");
@@ -207,16 +208,16 @@ class AttendanceController extends Controller
                 'scheduled_time' => $timeoutTime,
                 'scheduled_date' => $today
             ]);
-            
+
             $count = count($request->employee_ids);
             return redirect()->back()->with('success', "Scheduled auto time-out for {$count} employees at {$timeoutTime}.");
         }
     }
-    
+
     private function executeTimeouts($employeeIds, $timeoutTime, $date, $timeoutType = 'auto_scheduled')
     {
         $updated = 0;
-        
+
         foreach ($employeeIds as $employeeId) {
             $attendance = Attendance::where('employee_id', $employeeId)
                                   ->where('date', $date)
@@ -232,37 +233,37 @@ class AttendanceController extends Controller
                 $updated++;
             }
         }
-        
+
         return $updated;
     }
-    
+
     public function checkScheduledTimeouts()
     {
         $currentTime = now()->format('H:i');
         $today = now()->toDateString();
-        
+
         $scheduledTimeouts = ScheduledTimeout::where('scheduled_date', $today)
                                            ->where('scheduled_time', '<=', $currentTime)
                                            ->where('executed', false)
                                            ->get();
-        
+
         $totalProcessed = 0;
-        
+
         foreach ($scheduledTimeouts as $scheduled) {
             $processed = $this->executeTimeouts(
-                $scheduled->employee_ids, 
-                $scheduled->scheduled_time, 
+                $scheduled->employee_ids,
+                $scheduled->scheduled_time,
                 $scheduled->scheduled_date
             );
-            
+
             $scheduled->update([
                 'executed' => true,
                 'executed_at' => now()
             ]);
-            
+
             $totalProcessed += $processed;
         }
-        
+
         return response()->json([
             'processed' => $totalProcessed,
             'schedules_executed' => $scheduledTimeouts->count()

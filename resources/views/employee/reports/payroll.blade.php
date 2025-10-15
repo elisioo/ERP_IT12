@@ -93,6 +93,7 @@
                             <th>Hourly Rate</th>
                             <th>Status</th>
                             <th>Pay Date</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -114,10 +115,15 @@
                                 </span>
                             </td>
                             <td>{{ $payroll->pay_date ? $payroll->pay_date->format('M d, Y') : '--' }}</td>
+                            <td>
+                                <a href="{{ route('reports.employee.payroll.pdf', ['employeeId' => $payroll->employee->id, 'period' => $period]) }}" class="btn btn-sm btn-danger" target="_blank">
+                                    <i class="fa-solid fa-file-pdf me-1"></i>PDF
+                                </a>
+                            </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center text-muted">No payroll records found for this period</td>
+                            <td colspan="9" class="text-center text-muted">No payroll records found for this period</td>
                         </tr>
                         @endforelse
                     </tbody>

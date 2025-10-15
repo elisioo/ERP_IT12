@@ -57,6 +57,65 @@
                         </div>
                     </div>
 
+                    <!-- Sidebar Background -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Sidebar Background</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sidebar_bg" id="sidebarBgDefault" value="default" checked>
+                                    <label class="form-check-label" for="sidebarBgDefault">
+                                        <img src="{{ asset('img/kdr.png') }}" alt="Default" class="img-thumbnail" style="width: 100px; height: 60px; object-fit: cover;">
+                                        <small class="d-block">Default</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sidebar_bg" id="sidebarBgPhoto1" value="photo1">
+                                    <label class="form-check-label" for="sidebarBgPhoto1">
+                                        <img src="{{ asset('img/set_photo_sidebar1.jpg') }}" alt="Photo 1" class="img-thumbnail" style="width: 100px; height: 60px; object-fit: cover;">
+                                        <small class="d-block">Kimbap Peach BG</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sidebar_bg" id="sidebarBgPhoto2" value="photo2">
+                                    <label class="form-check-label" for="sidebarBgPhoto2">
+                                        <img src="{{ asset('img/set_photo_sidebar2.jpg') }}" alt="Photo 2" class="img-thumbnail" style="width: 100px; height: 60px; object-fit: cover;">
+                                        <small class="d-block">Kimbap Brown BG</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Background Overlay Settings -->
+                    <div class="mb-3" id="overlaySettings" style="display: none;">
+                        <label class="form-label fw-bold">Background Overlay</label>
+
+                        <!-- Overlay Opacity -->
+                        <div class="mb-3">
+                            <label for="overlayOpacity" class="form-label">Overlay Darkness</label>
+                            <input type="range" class="form-range" id="overlayOpacity" name="overlay_opacity" min="0" max="80" value="40" step="10">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Light</small>
+                                <small class="text-muted">Dark</small>
+                            </div>
+                        </div>
+
+                        <!-- Overlay Blur -->
+                        <div class="mb-3">
+                            <label for="overlayBlur" class="form-label">Background Blur</label>
+                            <input type="range" class="form-range" id="overlayBlur" name="overlay_blur" min="0" max="10" value="2" step="1">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">None</small>
+                                <small class="text-muted">Heavy</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Performance -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Performance</label>

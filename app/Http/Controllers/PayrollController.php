@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use App\Models\Employee;
 use App\Models\Attendance;
 use App\Models\Payroll;
@@ -14,34 +15,38 @@ class PayrollController extends Controller
     public function index(Request $request)
     {
         $month = $request->input('month', now()->format('Y-m'));
-        
+
         // Auto-generate payrolls if they don't exist
         $this->autoGeneratePayrolls($month);
-        
+
         $payrolls = Payroll::where('period', $month)
                           ->with(['employee.attendances' => function($q) use ($month) {
                               $q->whereYear('date', Carbon::parse($month)->year)
                                 ->whereMonth('date', Carbon::parse($month)->month);
                           }, 'deductions'])
-                          ->get()
-                          ->map(function($payroll) use ($month) {
-                              $payroll->total_deductions = $payroll->deductions->sum('amount');
-                              
-                              // For pending payrolls, calculate real-time values
-                              if ($payroll->status === 'pending') {
-                                  $currentHours = $this->calculateTotalHours($payroll->employee->attendances);
-                                  $currentRate = $payroll->employee->hourly_rate ?? $payroll->hourly_rate ?? 100;
-                                  $currentGrossPay = $currentHours * $currentRate;
-                                  $hasIncompleteAttendance = $this->hasIncompleteAttendance($payroll->employee->attendances);
-                                  
-                                  // Override with live calculations
-                                  $payroll->total_hours = $currentHours;
-                                  $payroll->gross_pay = $currentGrossPay;
-                                  $payroll->has_incomplete_attendance = $hasIncompleteAttendance;
-                              }
-                              
-                              return $payroll;
-                          });
+                          ->paginate(10)
+                          ->withQueryString();
+
+        // Apply calculations to each payroll item
+        $payrolls->getCollection()->transform(function($payroll) use ($month) {
+            $payroll->total_deductions = $payroll->deductions->sum('amount');
+
+            // For pending payrolls, calculate real-time values
+            if ($payroll->status === 'pending') {
+                $currentHours = $this->calculateTotalHours($payroll->employee->attendances);
+                $currentRate = $payroll->employee->hourly_rate ?? $payroll->hourly_rate ?? 100;
+                $currentGrossPay = $currentHours * $currentRate;
+                $hasIncompleteAttendance = $this->hasIncompleteAttendance($payroll->employee->attendances);
+
+                // Override with live calculations
+                $payroll->total_hours = $currentHours;
+                $payroll->gross_pay = $currentGrossPay;
+                $payroll->net_pay = $currentGrossPay - $payroll->total_deductions;
+                $payroll->has_incomplete_attendance = $hasIncompleteAttendance;
+            }
+
+            return $payroll;
+        });
 
         return view('employee.payroll', compact('payrolls', 'month'));
     }
@@ -57,7 +62,7 @@ class PayrollController extends Controller
             $existingPayroll = Payroll::where('employee_id', $employee->id)
                                     ->where('period', $month)
                                     ->first();
-            
+
             if (!$existingPayroll) {
                 $totalHours = $this->calculateTotalHours($employee->attendances);
                 $hourlyRate = $employee->hourly_rate ?? 100;
@@ -78,7 +83,7 @@ class PayrollController extends Controller
                 $totalHours = $this->calculateTotalHours($employee->attendances);
                 $hourlyRate = $employee->hourly_rate;
                 $grossPay = $totalHours * $hourlyRate;
-                
+
                 $totalDeductions = $existingPayroll->deductions()->sum('amount');
                 $existingPayroll->update([
                     'total_hours' => $totalHours,
@@ -155,20 +160,20 @@ class PayrollController extends Controller
             $q->whereYear('date', Carbon::parse($month)->year)
               ->whereMonth('date', Carbon::parse($month)->month);
         }])->findOrFail($id);
-        
+
         // Check for incomplete attendance
         if ($this->hasIncompleteAttendance($payroll->employee->attendances)) {
             return redirect()->back()->with('error', 'Cannot pay employee with incomplete attendance records (missing time out).');
         }
-        
+
         // Auto time-out any ongoing shifts before payment
         $this->autoTimeOutOngoingShifts($payroll->employee->attendances);
-        
+
         // Calculate final values before marking as paid
         $currentHours = $this->calculateTotalHours($payroll->employee->attendances);
         $currentRate = $payroll->employee->hourly_rate ?? $payroll->hourly_rate ?? 100;
         $grossPay = $currentHours * $currentRate;
-        
+
         $totalDeductions = $payroll->deductions()->sum('amount');
         $payroll->update([
             'total_hours' => $currentHours,
@@ -176,7 +181,7 @@ class PayrollController extends Controller
             'gross_pay' => $grossPay,
             'total_deductions' => $totalDeductions,
             'net_pay' => $grossPay - $totalDeductions,
-            'status' => 'paid', 
+            'status' => 'paid',
             'pay_date' => now()
         ]);
 
@@ -186,7 +191,7 @@ class PayrollController extends Controller
     public function bulkPay(Request $request)
     {
         $payrollIds = $request->input('payroll_ids', []);
-        
+
         if (empty($payrollIds)) {
             return redirect()->back()->with('error', 'No payroll records selected.');
         }
@@ -197,25 +202,25 @@ class PayrollController extends Controller
             $q->whereYear('date', Carbon::parse($month)->year)
               ->whereMonth('date', Carbon::parse($month)->month);
         }])->whereIn('id', $payrollIds)->where('status', 'pending')->get();
-        
+
         $updated = 0;
         $skipped = 0;
-        
+
         foreach ($payrolls as $payroll) {
             // Check for incomplete attendance
             if ($this->hasIncompleteAttendance($payroll->employee->attendances)) {
                 $skipped++;
                 continue;
             }
-            
+
             // Auto time-out any ongoing shifts before payment
             $this->autoTimeOutOngoingShifts($payroll->employee->attendances);
-            
+
             // Calculate final values before marking as paid
             $currentHours = $this->calculateTotalHours($payroll->employee->attendances);
             $currentRate = $payroll->employee->hourly_rate ?? $payroll->hourly_rate ?? 100;
             $grossPay = $currentHours * $currentRate;
-            
+
             $totalDeductions = $payroll->deductions()->sum('amount');
             $payroll->update([
                 'total_hours' => $currentHours,
@@ -228,7 +233,7 @@ class PayrollController extends Controller
             ]);
             $updated++;
         }
-        
+
         $message = "Marked {$updated} payroll records as paid!";
         if ($skipped > 0) {
             $message .= " Skipped {$skipped} records with incomplete attendance.";
@@ -239,9 +244,9 @@ class PayrollController extends Controller
 
     public function autoGenerate()
     {
-        \Artisan::call('payroll:generate');
-        $output = \Artisan::output();
-        
+        Artisan::call('payroll:generate');
+        $output = Artisan::output();
+
         return redirect()->back()->with('success', 'Auto-generation completed! ' . strip_tags($output));
     }
 
@@ -250,19 +255,19 @@ class PayrollController extends Controller
         $request->validate(['hourly_rate' => 'required|numeric|min:0']);
 
         $employee = Employee::findOrFail($id);
-        
+
         // Check if employee has any paid payrolls in current month
         $currentMonth = now()->format('Y-m');
         $hasPaidPayroll = Payroll::where('employee_id', $id)
                                 ->where('period', $currentMonth)
                                 ->where('status', 'paid')
                                 ->exists();
-        
+
         if ($hasPaidPayroll) {
             return redirect()->route('employee.payroll')
                            ->with('error', 'Cannot update hourly rate for employee with paid payroll in current month.');
         }
-        
+
         $employee->hourly_rate = $request->hourly_rate;
         $employee->save();
 
@@ -281,7 +286,7 @@ class PayrollController extends Controller
         ]);
 
         $amount = 0;
-        
+
         if ($request->type === 'late') {
             $duration = $request->duration;
             if ($request->time_unit === 'minutes') {
@@ -316,7 +321,7 @@ class PayrollController extends Controller
     public function getDeductions($id)
     {
         $payroll = Payroll::with('deductions')->findOrFail($id);
-        
+
         return response()->json([
             'deductions' => $payroll->deductions,
             'total' => $payroll->deductions->sum('amount')
@@ -328,7 +333,7 @@ class PayrollController extends Controller
         $deduction = Deduction::findOrFail($id);
         $payrollId = $deduction->payroll_id;
         $deduction->delete();
-        
+
         // Update payroll totals
         $payroll = Payroll::findOrFail($payrollId);
         $totalDeductions = $payroll->deductions()->sum('amount');
@@ -336,18 +341,18 @@ class PayrollController extends Controller
             'total_deductions' => $totalDeductions,
             'net_pay' => $payroll->gross_pay - $totalDeductions
         ]);
-        
+
         return response()->json(['success' => true]);
     }
 
     private function calculateTotalHours($attendances)
     {
         $totalHours = 0;
-        
+
         foreach ($attendances as $attendance) {
             if ($attendance->time_in) {
                 $timeIn = strtotime($attendance->time_in);
-                
+
                 // If time_out exists, use it; otherwise use current time for ongoing shift
                 if ($attendance->time_out) {
                     $timeOut = strtotime($attendance->time_out);
@@ -355,7 +360,7 @@ class PayrollController extends Controller
                     // Use current time for ongoing shift
                     $timeOut = time();
                 }
-                
+
                 if ($timeOut < $timeIn) {
                     $timeOut += 24 * 3600;
                 }
@@ -373,7 +378,7 @@ class PayrollController extends Controller
         // Only consider it incomplete if there are old records without time_out
         // Current day ongoing shifts are allowed
         $today = now()->format('Y-m-d');
-        
+
         foreach ($attendances as $attendance) {
             if ($attendance->time_in && !$attendance->time_out && $attendance->date != $today) {
                 return true;
@@ -385,7 +390,7 @@ class PayrollController extends Controller
     private function autoTimeOutOngoingShifts($attendances)
     {
         $currentTime = now()->format('H:i:s');
-        
+
         foreach ($attendances as $attendance) {
             if ($attendance->time_in && !$attendance->time_out) {
                 $attendance->update(['time_out' => $currentTime]);

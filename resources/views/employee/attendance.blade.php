@@ -40,6 +40,13 @@
         </div>
     </div>
 
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="mb-0 text-muted">Showing {{ $employees->firstItem() }}–{{ $employees->lastItem() }} of {{ $employees->total() }} employees</p>
+        <div class="d-flex justify-content-end">
+            {{ $employees->links('pagination::bootstrap-5') }}
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">

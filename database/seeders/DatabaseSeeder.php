@@ -21,14 +21,15 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
-        
+
         $this->call(CategorySeeder::class);
         $this->call(ItemSeeder::class);
         $this->call(MenuSeeder::class);
         $this->call(OrderLineSeeder::class);
+        $this->call(EmployeeSeeder::class);
 
     }
 
 
- 
+
 }

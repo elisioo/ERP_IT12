@@ -51,19 +51,20 @@
                 <table class="table table-striped">
                     <thead class="table-dark">
                         <tr>
-                            <th>Date</th>
+                            <th>Period</th>
                             <th>Hours Worked</th>
                             <th>Hourly Rate</th>
                             <th>Gross Pay</th>
                             <th>Deductions</th>
                             <th class="text-success fw-bold">Net Pay</th>
                             <th>Status</th>
+                            <th>Pay Date</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($payrolls as $payroll)
                         <tr>
-                            <td>{{ $payroll->created_at->format('M d, Y') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($payroll->period)->format('M Y') }}</td>
                             <td>{{ $payroll->total_hours }} hrs</td>
                             <td>₱{{ number_format($payroll->hourly_rate, 2) }}</td>
                             <td>₱{{ number_format($payroll->gross_pay, 2) }}</td>
@@ -74,10 +75,11 @@
                                     {{ ucfirst($payroll->status) }}
                                 </span>
                             </td>
+                            <td>{{ $payroll->pay_date ? $payroll->pay_date->format('M d, Y') : '--' }}</td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted">No payroll records found for this employee in the selected period</td>
+                            <td colspan="8" class="text-center text-muted">No payroll records found for this employee in the selected period</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -90,6 +92,7 @@
                             <th>₱{{ number_format($totalGrossPay, 2) }}</th>
                             <th class="text-danger">₱{{ number_format($totalDeductions, 2) }}</th>
                             <th class="text-success fw-bold">₱{{ number_format($totalNetPay, 2) }}</th>
+                            <th>--</th>
                             <th>--</th>
                         </tr>
                     </tfoot>
@@ -110,7 +113,7 @@
                 <table class="table table-sm">
                     <thead>
                         <tr>
-                            <th>Date</th>
+                            <th>Period</th>
                             <th>Description</th>
                             <th>Amount</th>
                         </tr>
@@ -119,7 +122,7 @@
                         @foreach($payrolls as $payroll)
                         @foreach($payroll->deductions as $deduction)
                         <tr>
-                            <td>{{ $payroll->created_at->format('M d, Y') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($payroll->period)->format('M Y') }}</td>
                             <td>{{ $deduction->description }}</td>
                             <td class="text-danger">₱{{ number_format($deduction->amount, 2) }}</td>
                         </tr>

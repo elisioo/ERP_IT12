@@ -38,6 +38,9 @@
                         <i class="fa-solid fa-robot me-1"></i>Auto
                     </button>
                 </form>
+                <a href="{{ route('reports.payroll', ['period' => $month]) }}" class="btn btn-danger btn-sm" target="_blank">
+                    <i class="fa-solid fa-file-pdf me-1"></i>Report
+                </a>
             </div>
         </div>
     </div>
@@ -61,7 +64,14 @@
                 <small class="text-muted">Total Gross: ₱{{ number_format($payrolls->sum('gross_pay'), 2) }} | Total Net: ₱{{ number_format($payrolls->sum(function($p) { return $p->net_pay ?? ($p->gross_pay - ($p->total_deductions ?? 0)); }), 2) }} | Total Deductions: ₱{{ number_format($payrolls->sum(function($p) { return $p->total_deductions ?? 0; }), 2) }}</small>
             </div>
             <div class="table-responsive">
-                <table class="table table-striped">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="mb-0 text-muted">Showing {{ $payrolls->firstItem() }}–{{ $payrolls->lastItem() }} of {{ $payrolls->total() }} payroll records</p>
+                <div class="d-flex justify-content-end">
+                    {{ $payrolls->links('pagination::bootstrap-5') }}
+                </div>
+            </div>
+
+            <table class="table table-striped">
                     <thead class="table-dark">
                         <tr>
                             <th><input type="checkbox" id="masterCheck"></th>
