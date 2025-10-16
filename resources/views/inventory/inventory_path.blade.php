@@ -40,11 +40,25 @@
     </div>
     @endif
     @if (!empty($inventoryAlert))
-        <div class="alert alert-warning alert-dismissible fade show mt-3 shadow-sm" role="alert">
-            <i class="fa-solid fa-boxes-stacked me-2"></i>
-            {{ $inventoryAlert }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+            <div id="inventoryToast" class="toast align-items-center text-bg-warning border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fa-solid fa-boxes-stacked me-2"></i>
+                        {{ $inventoryAlert }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
         </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const toastEl = document.getElementById('inventoryToast');
+                const toast = new bootstrap.Toast(toastEl, { delay: 10000 }); // 5 seconds
+                toast.show();
+            });
+        </script>
     @endif
 
     <!-- Summary Cards -->
