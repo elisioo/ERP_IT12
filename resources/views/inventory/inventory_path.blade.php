@@ -201,7 +201,7 @@
                                         data-name="{{ $item->menu->menu_name ?? 'Unnamed' }}"
                                         data-category="{{ $item->category_id }}" data-quantity="{{ $item->quantity }}"
                                         data-price="{{ $item->cost_price }}" data-unit="{{ $item->unit }}">
-                                        <i class="fa-solid fa-pen"></i> Edit
+                                        <i class="fa-solid fa-pen"></i>
                                     </button>
 
 
@@ -209,7 +209,7 @@
                                     <button type="button" class="btn btn-sm btn-outline-warning archived" data-bs-toggle="modal"
                                         data-bs-target="#confirmArchiveModal" data-id="{{ $item->id }}"
                                         data-name="{{ $item->menu->menu_name ?? 'Unnamed' }}">
-                                        <i class="fa-solid fa-box-archive"></i> Archive
+                                        <i class="fa-solid fa-box-archive"></i>
                                     </button>
 
                                 </td>
