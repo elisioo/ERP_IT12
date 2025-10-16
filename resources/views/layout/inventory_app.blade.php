@@ -37,6 +37,38 @@
     }
     .card {
         border-radius: 12px;
+        }
+    html, body {
+        height: 100%;
+        overflow: hidden; /* prevent double scrollbars */
+    }
+
+    /* Make only main content scrollable */
+    #main-content {
+        height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background-color: #f8f9fa;
+    }
+
+    /* Sidebar always fixed and full height */
+    .bg-dark {
+        height: 100vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #555 #222;
+    }
+
+    /* Optional: Custom scrollbar for sidebar */
+    .bg-dark::-webkit-scrollbar {
+        width: 8px;
+    }
+    .bg-dark::-webkit-scrollbar-thumb {
+        background-color: #555;
+        border-radius: 10px;
+    }
+    .bg-dark::-webkit-scrollbar-track {
+        background-color: #222;
     }
 
     </style>
@@ -63,16 +95,19 @@
         </div>
     </div>
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-3 col-lg-2 bg-dark p-3 vh-100 d-flex flex-column">
+        <div class="row flex-nowrap">
+            <!-- Fixed Sidebar -->
+            <div class="col-md-3 col-lg-2 bg-dark p-3 d-flex flex-column position-fixed top-0 start-0 vh-100">
                 @include('layout.sidebar', ['active' => $page ?? request()->route('page') ?? 'dashboard'])
-
             </div>
-            <div class="col-md-9 col-lg-10 px-md-4 py-4">
+
+            <!-- Scrollable Main Content -->
+            <div class="col-md-9 col-lg-10 ms-auto px-md-4 py-4" id="main-content">
                 @yield('content')
             </div>
         </div>
     </div>
+
     @include('employee.modals.profile')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
