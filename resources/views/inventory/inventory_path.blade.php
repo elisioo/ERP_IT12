@@ -40,12 +40,18 @@
     </div>
     @endif
     @if (!empty($inventoryAlert))
+        @php
+            $alertType = $inventoryAlert['type'] ?? 'warning';
+            $alertMessage = $inventoryAlert['message'] ?? $inventoryAlert;
+            $bgClass = $alertType === 'success' ? 'text-bg-success' : ($alertType === 'danger' ? 'text-bg-danger' : 'text-bg-warning');
+            $icon = $alertType === 'success' ? 'fa-circle-check' : ($alertType === 'danger' ? 'fa-triangle-exclamation' : 'fa-boxes-stacked');
+        @endphp
         <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
-            <div id="inventoryToast" class="toast align-items-center text-bg-warning border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div id="inventoryToast" class="toast align-items-center {{ $bgClass }} border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
                     <div class="toast-body">
-                        <i class="fa-solid fa-boxes-stacked me-2"></i>
-                        {{ $inventoryAlert }}
+                        <i class="fa-solid {{ $icon }} me-2"></i>
+                        {{ $alertMessage }}
                     </div>
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
@@ -55,11 +61,12 @@
         <script>
             document.addEventListener("DOMContentLoaded", function() {
                 const toastEl = document.getElementById('inventoryToast');
-                const toast = new bootstrap.Toast(toastEl, { delay: 10000 }); // 5 seconds
+                const toast = new bootstrap.Toast(toastEl, { delay: 10000 });
                 toast.show();
             });
         </script>
     @endif
+
 
     <!-- Summary Cards -->
     <div class="row mb-4">

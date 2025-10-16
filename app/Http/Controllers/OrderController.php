@@ -267,6 +267,18 @@ class OrderController extends Controller
                 $order->lines()->delete();
 
                 DB::commit();
+                  // Build readable item list for the alert
+                $restoredItems = $order->lines->map(function ($line) {
+                    $menu = \App\Models\Menu::find($line->menu_id);
+                    return "{$menu->menu_name} (x{$line->quantity})";
+                })->join(', ');
+
+                // Persistent session alert for next page (green toast)
+                session()->put('inventory_alert', [
+                    'type' => 'success',
+                    'message' => "Item(s) returned to stock from canceled order {$order->order_number}: {$restoredItems}"
+                ]);
+
                 return redirect()->route('orders.index')->with('success', 'Order has been canceled and inventory restored.');
             }
 
@@ -328,6 +340,7 @@ class OrderController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('orders.index')->with('success', 'Order updated successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
