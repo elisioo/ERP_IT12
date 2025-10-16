@@ -110,6 +110,35 @@
     <div class="row">
     <!-- Inventory Table -->
         <div class="col-8">
+                  <!-- Items by Category -->
+        <div class="row">
+            <div class="col-6">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-white fw-bold">
+                    <i class="fa-solid fa-boxes-stacked text-success me-2"></i> Items by Category
+                </div>
+                <div class="card-body">
+                    <canvas id="itemsByCategoryChart" style="height:200px"></canvas>
+                </div>
+            </div>
+            </div>
+            <div class="col-6">
+            <!-- Quick Stats -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-bold">
+                    <i class="fa-solid fa-gauge-high text-warning me-2"></i> Quick Stats
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fa-solid fa-cubes text-primary me-2"></i> <strong>Total Items:</strong> {{ $totalItems }}</li>
+                        <li class="mb-2"><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i> <strong>Low Stock:</strong> {{ $lowStockCount }}</li>
+                        <li class="mb-2"><i class="fa-solid fa-ban text-danger me-2"></i> <strong>Out of Stock:</strong> {{ $outOfStockCount }}</li>
+                        <li><i class="fa-solid fa-warehouse text-secondary me-2"></i> <strong>Status:</strong> {{ $stockStatus['text'] }}</li>
+                    </ul>
+                </div>
+            </div>
+            </div>
+        </div>
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
                     <div>Inventory Items</div>
@@ -242,30 +271,7 @@
             </div>
         </div>
 
-        <!-- Items by Category -->
-        <div class="card shadow-sm border-0 mb-3">
-            <div class="card-header bg-white fw-bold">
-                <i class="fa-solid fa-boxes-stacked text-success me-2"></i> Items by Category
-            </div>
-            <div class="card-body">
-                <canvas id="itemsByCategoryChart" style="height:200px"></canvas>
-            </div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white fw-bold">
-                <i class="fa-solid fa-gauge-high text-warning me-2"></i> Quick Stats
-            </div>
-            <div class="card-body">
-                <ul class="list-unstyled mb-0">
-                    <li class="mb-2"><i class="fa-solid fa-cubes text-primary me-2"></i> <strong>Total Items:</strong> {{ $totalItems }}</li>
-                    <li class="mb-2"><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i> <strong>Low Stock:</strong> {{ $lowStockCount }}</li>
-                    <li class="mb-2"><i class="fa-solid fa-ban text-danger me-2"></i> <strong>Out of Stock:</strong> {{ $outOfStockCount }}</li>
-                    <li><i class="fa-solid fa-warehouse text-secondary me-2"></i> <strong>Status:</strong> {{ $stockStatus['text'] }}</li>
-                </ul>
-            </div>
-        </div>
+  
 
     </div>
     </div>
