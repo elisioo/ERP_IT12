@@ -16,6 +16,11 @@ class InventoryController extends Controller
     public function index(Request $request)
     {
         $query = Inventory::with(['category', 'menu']);
+        $inventoryAlert = session('inventory_alert');
+        // Remove it after showing once
+        if ($inventoryAlert) {
+            session()->forget('inventory_alert');
+        }
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->whereHas('menu', function ($q) use ($search) {
@@ -31,7 +36,7 @@ class InventoryController extends Controller
             $query->where('category_id', $request->input('category_id'));
         }
 
-        $items = $query->paginate(10)->withQueryString(); // Preserve query params
+        $items = $query->paginate(5)->withQueryString(); // Preserve query params
         $archivedItems = Inventory::onlyTrashed()->with(['category', 'menu'])->get();
         $categories = Category::all();
         $menus = Menu::all();
@@ -47,7 +52,7 @@ class InventoryController extends Controller
 
         return view('inventory.inventory_path', compact(
             'items', 'archivedItems', 'categories',
-            'totalItems', 'lowStockCount', 'outOfStockCount', 'menus','stockAlert','stockStatus'
+            'totalItems', 'lowStockCount', 'outOfStockCount', 'menus','stockAlert','stockStatus','inventoryAlert'
         ), ['page' => 'inventory']);
     }
 

@@ -20,6 +20,25 @@
         font-family: 'Nunito', sans-serif;
         background-color: #f8f9fa;
     }
+    .archived
+    {
+        color: #6c757d !important;
+        border-color: #6c757d !important;
+    }
+    .archived:hover
+    {
+        background-color: #fcfcfc !important;
+        color: #272727 !important;
+        border-color: #272727 !important;
+    }
+
+    .card-header i {
+        font-size: 1rem;
+    }
+    .card {
+        border-radius: 12px;
+    }
+
     </style>
 
 

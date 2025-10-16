@@ -66,7 +66,7 @@
                                 <form action="{{ route('categories.archive', $category->id) }}" method="POST"
                                     onsubmit="return confirm('Move to archive?');">
                                     @csrf
-                                    <button class="dropdown-item text-warning" type="submit">
+                                    <button class="dropdown-item text-warning archived" type="submit">
                                         <i class="fa-solid fa-box-archive"></i> Move to Archive
                                     </button>
                                 </form>

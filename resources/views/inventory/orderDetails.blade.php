@@ -6,7 +6,6 @@
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
             <h5 class="fw-bold h5">Order ID <span class="text-primary">#{{ $order->order_number }}</span></h5>
-            <p class="text-muted mb-0">Orders > <span class="text-danger">Order Details</span></p>
         </div>
         <div>
             <span class="badge 

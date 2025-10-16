@@ -123,7 +123,7 @@ class OrderController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        // ✅ Generate a unique order number safely
+        //  Generate a unique order number safely
         $orderNumber = null;
         $attempts = 0;
 
@@ -139,7 +139,7 @@ class OrderController extends Controller
             return back()->with('error', 'Failed to generate a unique order number after several attempts. Please try again.');
         }
 
-        // ✅ Validate stock availability before creating the order
+        //  Validate stock availability before creating the order
         foreach ($request->items as $i => $item) {
             $menu = Menu::with('inventory')->find($item['menu_id']);
             $availableQty = $menu->inventory->quantity ?? 0;
@@ -196,7 +196,14 @@ class OrderController extends Controller
             $order->update(['total_amount' => $total]);
 
             DB::commit();
-            return redirect()->route('orders.index')->with('success', 'Order created successfully!');
+         $itemNames = collect($request->items)->map(function ($item) {
+        $menu = \App\Models\Menu::find($item['menu_id']);
+        return "{$menu->menu_name} (x{$item['quantity']})";
+        })->join(', ');
+
+        session()->put('inventory_alert', "Item(s) deducted from order {$order->order_number}: {$itemNames}");
+
+        return redirect()->route('orders.index')->with('success', 'Order created successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Failed to create order: ' . $e->getMessage());

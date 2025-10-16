@@ -123,10 +123,10 @@
                                 <a href="{{ route('menus.edit', $menu->id) }}" class="btn btn-sm btn-outline-dark"><i
                                         class="fa-solid fa-pen-to-square"></i></a>
                                 <!-- Archived -->
-                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
+                                <button class="btn btn-sm btn-outline-warning archived" data-bs-toggle="modal"
                                     data-bs-target="#deleteModal" data-url="{{ route('menus.destroy', $menu->id) }}"
                                     data-name="{{ $menu->menu_name }}">
-                                    <i class="fa-solid fa-box-archive"></i>
+                                    <i class="fa-solid fa-box-archive "></i>
                                 </button>
                             </div>
                         </div>

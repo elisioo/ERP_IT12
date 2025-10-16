@@ -1,6 +1,7 @@
 @extends('layout.inventory_app')
 
 @section('content')
+
 <div class="container-fluid">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
@@ -37,6 +38,13 @@
         <i class="fa-solid fa-triangle-exclamation me-2"></i> {{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+    @endif
+    @if (!empty($inventoryAlert))
+        <div class="alert alert-warning alert-dismissible fade show mt-3 shadow-sm" role="alert">
+            <i class="fa-solid fa-boxes-stacked me-2"></i>
+            {{ $inventoryAlert }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
 
     <!-- Summary Cards -->
@@ -78,124 +86,167 @@
         </div>
     </div>
 
+    <div class="row">
     <!-- Inventory Table -->
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
-            <div>Inventory Items</div>
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                <!-- Left side: Search + Filter -->
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <!-- Search Box -->
-                    <form method="GET" action="{{ route('inventory.index') }}" class="d-flex align-items-center gap-2">
-                        <input type="text" name="search" class="form-control form-control-sm"
-                            placeholder="Search items..." value="{{ request('search') }}" style="width: 180px;">
-                        <button type="submit" class="btn btn-sm btn-outline-primary">
-                            <i class="fa fa-search"></i>
-                        </button>
-                    </form>
-
-                    <!-- Category Filter Dropdown -->
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown">
-                            <i class="fa fa-filter"></i> Category
-                        </button>
-                        <ul class="dropdown-menu p-2" style="min-width: 200px;">
-                            <form method="GET" action="{{ route('inventory.index') }}">
-                                @foreach($categories as $category)
-                                <li>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="category_id"
-                                            value="{{ $category->id }}" id="cat{{ $category->id }}"
-                                            onchange="this.form.submit()"
-                                            {{ request('category_id') == $category->id ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="cat{{ $category->id }}">
-                                            {{ $category->category_name }}
-                                        </label>
-                                    </div>
-                                </li>
-                                @endforeach
-                                <li>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="category_id" value=""
-                                            id="catAll" onchange="this.form.submit()"
-                                            {{ request('category_id') == '' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="catAll">All Categories</label>
-                                    </div>
-                                </li>
+        <div class="col-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                    <div>Inventory Items</div>
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <!-- Left side: Search + Filter -->
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <!-- Search Box -->
+                            <form method="GET" action="{{ route('inventory.index') }}" class="d-flex align-items-center gap-2">
+                                <input type="text" name="search" class="form-control form-control-sm"
+                                    placeholder="Search items..." value="{{ request('search') }}" style="width: 180px;">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa fa-search"></i>
+                                </button>
                             </form>
-                        </ul>
+
+                            <!-- Category Filter Dropdown -->
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown">
+                                    <i class="fa fa-filter"></i> Category
+                                </button>
+                                <ul class="dropdown-menu p-2" style="min-width: 200px;">
+                                    <form method="GET" action="{{ route('inventory.index') }}">
+                                        @foreach($categories as $category)
+                                        <li>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="category_id"
+                                                    value="{{ $category->id }}" id="cat{{ $category->id }}"
+                                                    onchange="this.form.submit()"
+                                                    {{ request('category_id') == $category->id ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="cat{{ $category->id }}">
+                                                    {{ $category->category_name }}
+                                                </label>
+                                            </div>
+                                        </li>
+                                        @endforeach
+                                        <li>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="category_id" value=""
+                                                    id="catAll" onchange="this.form.submit()"
+                                                    {{ request('category_id') == '' ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="catAll">All Categories</label>
+                                            </div>
+                                        </li>
+                                    </form>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Right side: PDF button -->
+                        <a href="{{ route('inventory.report') }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                            <i class="fa-solid fa-file-pdf"></i> Export PDF
+                        </a>
                     </div>
+
+
                 </div>
+                <div class="card-body table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Category</th>
+                                <th>Unit Price (₱)</th>
+                                <th>Quantity</th>
+                                <th>Unit</th>
+                                <th>Status</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($items as $item)
+                            <tr>
+                                <td>{{ $item->menu->menu_name ?? 'Unnamed' }}</td>
+                                <td>{{ $item->category->category_name ?? 'N/A' }}</td>
+                                <td>₱{{ number_format($item->cost_price, 2) }}</td>
+                                <td>{{ $item->quantity }}</td>
+                                <td>{{ $item->unit }}</td>
+                                <td>
+                                    <span
+                                        class="badge bg-{{ $item->quantity == 0 ? 'danger' : ($item->quantity < 10 ? 'warning text-dark' : 'success') }}">
+                                        {{ $item->quantity == 0 ? 'Out of Stock' : ($item->quantity < 10 ? 'Low Stock' : 'In Stock') }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <!-- Edit button -->
+                                    <button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="modal"
+                                        data-bs-target="#editModal" data-id="{{ $item->id }}"
+                                        data-name="{{ $item->menu->menu_name ?? 'Unnamed' }}"
+                                        data-category="{{ $item->category_id }}" data-quantity="{{ $item->quantity }}"
+                                        data-price="{{ $item->cost_price }}" data-unit="{{ $item->unit }}">
+                                        <i class="fa-solid fa-pen"></i> Edit
+                                    </button>
 
-                <!-- Right side: PDF button -->
-                <a href="{{ route('inventory.report') }}" class="btn btn-outline-primary btn-sm" target="_blank">
-                    <i class="fa-solid fa-file-pdf"></i> Export PDF
-                </a>
+
+                                    <!-- Archive button -->
+                                    <button type="button" class="btn btn-sm btn-outline-warning archived" data-bs-toggle="modal"
+                                        data-bs-target="#confirmArchiveModal" data-id="{{ $item->id }}"
+                                        data-name="{{ $item->menu->menu_name ?? 'Unnamed' }}">
+                                        <i class="fa-solid fa-box-archive"></i> Archive
+                                    </button>
+
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No items found.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+
+               
+                </div>
             </div>
-
-
-        </div>
-        <div class="card-body table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Item Name</th>
-                        <th>Category</th>
-                        <th>Unit Price (₱)</th>
-                        <th>Quantity</th>
-                        <th>Unit</th>
-                        <th>Status</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($items as $item)
-                    <tr>
-                        <td>{{ $item->menu->menu_name ?? 'Unnamed' }}</td>
-                        <td>{{ $item->category->category_name ?? 'N/A' }}</td>
-                        <td>₱{{ number_format($item->cost_price, 2) }}</td>
-                        <td>{{ $item->quantity }}</td>
-                        <td>{{ $item->unit }}</td>
-                        <td>
-                            <span
-                                class="badge bg-{{ $item->quantity == 0 ? 'danger' : ($item->quantity < 10 ? 'warning text-dark' : 'success') }}">
-                                {{ $item->quantity == 0 ? 'Out of Stock' : ($item->quantity < 10 ? 'Low Stock' : 'In Stock') }}
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            <!-- Edit button -->
-                            <button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="modal"
-                                data-bs-target="#editModal" data-id="{{ $item->id }}"
-                                data-name="{{ $item->menu->menu_name ?? 'Unnamed' }}"
-                                data-category="{{ $item->category_id }}" data-quantity="{{ $item->quantity }}"
-                                data-price="{{ $item->cost_price }}" data-unit="{{ $item->unit }}">
-                                <i class="fa-solid fa-pen"></i> Edit
-                            </button>
-
-
-                            <!-- Archive button -->
-                            <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
-                                data-bs-target="#confirmArchiveModal" data-id="{{ $item->id }}"
-                                data-name="{{ $item->menu->menu_name ?? 'Unnamed' }}">
-                                <i class="fa-solid fa-box-archive"></i> Archive
-                            </button>
-
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="text-center text-muted">No items found.</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-
             <!-- Pagination -->
             <div class="mt-3">
                 {{ $items->links('pagination::bootstrap-5') }}
             </div>
         </div>
+           <div class="col-lg-4">
+
+        <!-- Stock Insights -->
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-white fw-bold">
+                <i class="fa-solid fa-chart-pie text-primary me-2"></i> Stock Insights
+            </div>
+            <div class="card-body">
+                <canvas id="stockStatusChart" style="height:200px"></canvas>
+            </div>
+        </div>
+
+        <!-- Items by Category -->
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-white fw-bold">
+                <i class="fa-solid fa-boxes-stacked text-success me-2"></i> Items by Category
+            </div>
+            <div class="card-body">
+                <canvas id="itemsByCategoryChart" style="height:200px"></canvas>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white fw-bold">
+                <i class="fa-solid fa-gauge-high text-warning me-2"></i> Quick Stats
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fa-solid fa-cubes text-primary me-2"></i> <strong>Total Items:</strong> {{ $totalItems }}</li>
+                    <li class="mb-2"><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i> <strong>Low Stock:</strong> {{ $lowStockCount }}</li>
+                    <li class="mb-2"><i class="fa-solid fa-ban text-danger me-2"></i> <strong>Out of Stock:</strong> {{ $outOfStockCount }}</li>
+                    <li><i class="fa-solid fa-warehouse text-secondary me-2"></i> <strong>Status:</strong> {{ $stockStatus['text'] }}</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
     </div>
     <!-- Confirm Archive Modal -->
     <div class="modal fade" id="confirmArchiveModal" tabindex="-1" aria-labelledby="confirmArchiveLabel"
@@ -452,8 +503,8 @@
             </form>
         </div>
     </div>
-
-    <!-- Auto-fill Script -->
+</div>
+   <!-- Auto-fill Script -->
     <script>
     document.querySelectorAll('input[name="menu_id"]').forEach(radio => {
         radio.addEventListener('change', function() {
@@ -504,11 +555,55 @@
             form.action = `/inventory/${itemId}/archive`;
         });
     });
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const ctxStatus = document.getElementById('stockStatusChart').getContext('2d');
+        new Chart(ctxStatus, {
+            type: 'doughnut',
+            data: {
+                labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+                datasets: [{
+                    data: [
+                        {{ $totalItems - ($lowStockCount + $outOfStockCount) }},
+                        {{ $lowStockCount }},
+                        {{ $outOfStockCount }}
+                    ],
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: { display: true, text: 'Stock Status Distribution' }
+                }
+            }
+        });
+
+        const ctxCategory = document.getElementById('itemsByCategoryChart').getContext('2d');
+        new Chart(ctxCategory, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($categories->pluck('category_name')) !!},
+                datasets: [{
+                    label: 'Items per Category',
+                    data: {!! json_encode(
+                        $categories->map(fn($cat) => $cat->inventories()->count())
+                    ) !!},
+                    backgroundColor: '#007bff'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } },
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Items by Category' }
+                }
+            }
+        });
+    });
     </script>
 
-
-
-
-
-</div>
 @endsection
