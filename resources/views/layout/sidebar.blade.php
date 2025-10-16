@@ -69,22 +69,23 @@
 </ul>
 
 <!-- Dropdown at bottom -->
-<div class="dropdown mt-auto">
+<div class="dropdown dropup mt-auto dropdown-float">
     <hr class="text-white">
     <a href="#" class="d-flex align-items-center text-light text-decoration-none dropdown-toggle" id="dropdownUser1"
         data-bs-toggle="dropdown" aria-expanded="false"
-        data-bs-toggle="tooltip" data-bs-placement="right" title="{{ session('admin_username', 'Admin') }}">
-        <img src="{{ session('admin_profile_picture') ? asset('storage/' . session('admin_profile_picture')) : 'https://i.pinimg.com/originals/45/de/42/45de424a29a8000a65787ec74440799c.png' }}"
+        title="{{ session('admin_username', 'Admin') }}">
+        <img src="{{ session('admin_profile_picture') 
+            ? asset('storage/' . session('admin_profile_picture')) 
+            : 'https://i.pinimg.com/originals/45/de/42/45de424a29a8000a65787ec74440799c.png' }}"
             alt="" width="32" height="32" class="rounded-circle me-2" style="object-fit: cover;">
         <strong class="sidebar-text">{{ session('admin_username', 'Admin') }}</strong>
     </a>
+
     <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">Profile</a></li>
         <li><a class="dropdown-item" href="/">Return</a></li>
         <li><a class="dropdown-item" href="{{ route('employee.dashboard') }}">Manage Employee</a></li>
-        <li>
-            <hr class="dropdown-divider">
-        </li>
+        <li><hr class="dropdown-divider"></li>
         <li>
             <form method="POST" action="{{ route('logout') }}" class="d-inline">
                 @csrf
@@ -109,6 +110,32 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: #ffffffff !important;
     color: #212529 !important;
     border-radius: 0.375rem !important;
+}
+
+.dropdown-float {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    padding: 0 1rem;
+    z-index: 1050;
+}
+
+/* Fix dropdown appearing behind cards or charts */
+.dropdown-menu {
+    position: absolute !important;
+    z-index: 2000 !important; /* Bring forward above everything else */
+}
+
+/* Optional: ensure sidebar and dropdown are not hidden */
+#sidebar,
+.bg-dark {
+    overflow: visible !important;
+}
+
+.dropup .dropdown-menu {
+    bottom: 100%;
+    top: auto;
+    margin-bottom: 0.5rem;
 }
 
 .nav-link {
