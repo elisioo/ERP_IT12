@@ -41,7 +41,6 @@ ERP_KOREANDINERDAVAO is an all-in-one Enterprise Resource Planning (ERP) system 
 
 ## Usage
 - Access the admin panel at `/admin` for system management.
-- Employee portal available at `/employee` for attendance and payroll viewing.
 - Inventory management through dedicated dashboard.
 
 ## Contributing
